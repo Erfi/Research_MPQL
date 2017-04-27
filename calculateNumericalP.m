@@ -14,13 +14,12 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,S)
 % Returns:
 %   P: Cost-to-go kernel matrix for [x u]'
 %---------------------------------------------------------
-    n = size(a,1);
-    numInputs = size(b,2);
-    Sxu = S(1:n, n+1:n+r*numInputs);
-    Suu = S(n+1:n+r*numInputs,n+1:n+r*numInputs);
+    [n,m] = size(b);
+    Sxu = S(1:n, n+1:n+r*m);
+    Suu = S(n+1:n+r*m,n+1:n+r*m);
     G = -pinv(Suu)*Sxu';
-    GL = G(1:numInputs,:);
-    numIter = 2*(n+numInputs)^2; %2 * number of equations nessessary (so we will have enough rank)
+    GL = G(1:m,:);
+    numIter = 2*(n+m)^2; %2 * number of equations nessessary (so we will have enough rank)
     for i=1:numIter
         x_k = randn(n,1);
         u_k = GL*x_k + 0.01*randn;%randn;
@@ -32,7 +31,6 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,S)
         LHS(i,:) = kron(xu_k', xu_k') -gamma*kron(xu_kp1', xu_kp1');
         RHS(i,:) = U_k;
     end
-
     P_stacked = pinv(LHS)*RHS;
     m = sqrt(size(P_stacked,1));
     P = reshape(P_stacked, [m,m]);

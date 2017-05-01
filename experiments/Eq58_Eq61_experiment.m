@@ -4,6 +4,8 @@
 % We are expecting to get the same answer when r is small and gamma is
 % close to 1.
 
+clear all;
+
 %------System (marginally stable)------
     ac=[0 1; -50 0];
     bc=[0 1]';
@@ -11,11 +13,13 @@
     [a,b] = c2d(ac, bc, dt);
     Q=eye(2);
     R=1;
-    r = 30;
-    gamma=0.8;
+    r = 10;
+    gamma=0.8; %1.0 --> LQR uses gamma = 1.0
 %------------------
 S = calculateNumericalS(a,b,r,gamma,Q,R);
 P_analytical = calculateAnalyticalP(a,b,r,S);
+%-----LQR gain------
+GLQR = -dlqr(a,b,Q,R);
 
 %---modifying & calculating Eq.61/66---
 [n,m] = size(b);
@@ -40,7 +44,7 @@ for i=1:numIter
     U_kpr = x(:,r+2)'*Q*x(:,r+2) + u(:,r+1)'*R*u(:,r+1);
     
     LHS(i,:) = kron(xu_k', xu_k') -gamma*kron(xu_kp1', xu_kp1');
-    RHS(i,:) = U_k - (gamma^r)*U_kpr;
+    RHS(i,:) = U_k; %- (gamma^r)*U_kpr;
 end
 
 P_stacked = pinv(LHS)*RHS;
@@ -48,7 +52,6 @@ m = sqrt(size(P_stacked,1));
 P_numerical = reshape(P_stacked, [m,m]);
 %--------------------------------------
 
-r
-gamma
-P_analytical
-P_numerical
+Pxu = P_numerical(1:n, n+1:end);
+Puu = P_numerical(n+1:end, n+1:end);
+GP = -inv(Puu)*Pxu';

@@ -46,6 +46,5 @@ function [ AnalyticalS ] = calculateAnalyticalS( a,b,r,gamma,Q,R )
     
     AnalyticalS = [P1'*Qgamma*P1, P1'*Qgamma*P2;
                    P2'*Qgamma*P1, Rgamma+P2'*Qgamma*P2];
-
 end
 

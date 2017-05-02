@@ -25,7 +25,7 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S)
     diffAvg = 100; % average difference in P_stacked for each iteration
     epsilon = 1e-6; % ending criteria
     while(diffAvg > epsilon)
-        u_k = GL*x_k + 0.1*randn; % u(k) with random/exploritory component 
+        u_k = GL*x_k + 0.01*randn; % u(k) with random/exploritory component 
         xu_k = vertcat(x_k, u_k);
         x_kp1 = a*x_k + b*u_k; % this is a simulation by the enviroment (plant)
         u_kp1 = GL*x_kp1;%H*x_k; % The two are the same

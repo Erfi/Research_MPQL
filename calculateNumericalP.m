@@ -1,4 +1,4 @@
-function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,S)
+function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
 % This funciton calculates the P matrix (Eq.66) numerically
 % Using batch (not recursive e.g. RLS) identification.
 %
@@ -9,20 +9,28 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,S)
 %   R: Input weight matrix
 %   r: Prediction Horizon
 %   gamma: Discount factor
-%   S: Cost-to-go kernel matrix for [x ur]'
+%   SorGL: Cost-to-go kernel matrix for [x ur]' or the gain, GL, extracted
+%       from it.
+%   usingS: Flag to indicate whether the second last input is matrix S or
+%       the gain that is extracted from it, GL. This is used to calculate P 
+%       iteratively in a policy iteration manner with a new GL everytime. 
 %
 % Returns:
 %   P: Cost-to-go kernel matrix for [x u]'
 %---------------------------------------------------------
     [n,m] = size(b);
-    Sxu = S(1:n, n+1:n+r*m);
-    Suu = S(n+1:n+r*m,n+1:n+r*m);
-    G = -pinv(Suu)*Sxu';
-    GL = G(1:m,:);
+    if usingS
+        Sxu = SorGL(1:n, n+1:n+r*m);
+        Suu = SorGL(n+1:n+r*m,n+1:n+r*m);
+        G = -pinv(Suu)*Sxu';
+        GL = G(1:m,:); 
+    else
+        GL = SorGL;
+    end
     numIter = 2*(n+m)^2; %2 * number of equations nessessary (so we will have enough rank)
     for i=1:numIter
         x_k = randn(n,1);
-        u_k = GL*x_k + 0.01*randn;%randn;
+        u_k = GL*x_k + 0.01*randn(m,1);%randn;
         xu_k = vertcat(x_k, u_k);
         x_kp1 = a*x_k + b*u_k; % this is a simulation by the enviroment (plant)
         u_kp1 = GL*x_kp1;%H*x_k; % The two are the same

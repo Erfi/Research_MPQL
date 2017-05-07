@@ -17,5 +17,5 @@ clear all;
 %------------------
 
 S = calculateAnalyticalS(a,b,r,gamma,Q,R);
-P_batch = calculateNumericalP(a,b,Q,R,r,gamma,S)
-P_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S)
+P_batch = calculateNumericalP(a,b,Q,R,r,gamma,S, true)
+P_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S, true)

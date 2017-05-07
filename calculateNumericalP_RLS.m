@@ -1,4 +1,4 @@
-function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S)
+function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
 % This funciton calculates the P matrix (Eq.66) numerically
 % Using RLS (not batch) identification.
 %
@@ -9,18 +9,26 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S)
 %   R: Input weight matrix
 %   r: Prediction Horizon
 %   gamma: Discount factor
-%   S: Cost-to-go kernel matrix for [x ur]'
+%   SorGL: Cost-to-go kernel matrix for [x ur]' or the Gain extracted from
+%       it
+%   usingS: Flag to indicate whether the second last input is matrix S or
+%       the gain that is extracted from it, GL. This is used to calculate P 
+%       iteratively in a policy iteration manner with a new GL everytime.
 %
 % Returns:
 %   P: Cost-to-go kernel matrix for [x u]'
 %---------------------------------------------------------
     [n,m] = size(b);
-    Sxu = S(1:n, n+1:n+r*m);
-    Suu = S(n+1:n+r*m,n+1:n+r*m);
-    G = -pinv(Suu)*Sxu';
-    GL = G(1:m,:);
+    if usingS
+        Sxu = SorGL(1:n, n+1:n+r*m);
+        Suu = SorGL(n+1:n+r*m,n+1:n+r*m);
+        G = -pinv(Suu)*Sxu';
+        GL = G(1:m,:); 
+    else
+         GL = SorGL;
+    end
     P_stacked = zeros((n+m)^2,1); % initialize P (in stacked form) 
-    V_k = eye((n+m)^2)*1000; % initialize autocorrolation matrix (Large numbers suggest low confidance for the initial estimation)
+    V_k = eye((n+m)^2)*100; % initialize autocorrolation matrix (Large numbers suggest low confidance for the initial estimation)
     x_k = randn(n,1); % initialize x(k)
     diffAvg = 100; % average difference in P_stacked for each iteration
     epsilon = 1e-6; % ending criteria
@@ -34,7 +42,7 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S)
         LHS = kron(xu_k', xu_k') -gamma*kron(xu_kp1', xu_kp1');
         RHS = U_k;
         %RLS
-        lambda = 0.999; % forgetting factor for the RLS
+        lambda = 0.99; % forgetting factor for the RLS
         V_kp1 = (1/lambda)*(V_k - (((V_k*LHS')*(LHS*V_k))/(1+LHS*V_k*LHS')));
         P_stacked_new = P_stacked + V_kp1*LHS'*(RHS - LHS*P_stacked);
         %ending criteria

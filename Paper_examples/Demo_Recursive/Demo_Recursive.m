@@ -2,6 +2,7 @@
 % to control a system in real time.
 clear all;
 %------System (marginally stable)------
+if(1)
     ac=[0 1; -50 0];
     bc=[0 1]';
     dt = 0.05;
@@ -10,6 +11,7 @@ clear all;
     R=1;
     r = 5;
     gamma=1.0; %1.0 --> LQR uses gamma = 1.0
+end
 %------------------
 
 %----Calculating S using different methods-----
@@ -27,18 +29,18 @@ S = calculateNumericalS_RLS(a,b,r,gamma,Q,R); %using small r
 Sxu = S(1:n, n+1:n+r*m);
 Suu = S(n+1:n+r*m,n+1:n+r*m);
 GS = -pinv(Suu)*Sxu';
-GL = GS(1:m,:);
-GP = GL
-numIter =10;
+GL = GS(1:m,:); 
+GP = GL;
+numIter=50;
 for i = 1:numIter
     P = calculateNumericalP_RLS(a,b,Q,R,r,gamma,GP(i,:),false);
     P_xu = P(1:n, n+1:end);
     P_uu = P(n+1:end, n+1:end);
-    GP(i+1,:) = -inv(P_uu)*P_xu'
+    GP(i+1,:) = -inv(P_uu)*P_xu';
 end
-
+GP;
 %LQR gain
-GLQR = -dlqr(a,b,Q,R);
+GLQR = -dlqr(a,b,Q,R)
 
 %plotting
 plot(1:numIter+1,GP)

@@ -28,13 +28,13 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
          GL = SorGL;
     end
     P_stacked = zeros((n+m)^2,1); % initialize P (in stacked form) 
-    V_k = eye((n+m)^2)*1e8; % initialize autocorrolation matrix (Large numbers suggest low confidance for the initial estimation)
+    V_k = eye((n+m)^2)*1e6; % initialize autocorrolation matrix (Large numbers suggest low confidance for the initial estimation)
     x_k = randn(n,1); % initialize x(k)
     diffAvg = 1000; % average difference in P_stacked for each iteration
-    epsilon = 1e-5; % ending criteria
+    epsilon = 800; % ending criteria
     counter = 0;
     while(diffAvg > epsilon)
-        u_k = GL*x_k + 0.2*randn(m,1); % u(k) with random/exploritory component 
+        u_k = GL*x_k + randn(m,1); % u(k) with random/exploritory component 
         xu_k = vertcat(x_k, u_k);
         x_kp1 = a*x_k + b*u_k; % this is a simulation by the enviroment (plant)
         u_kp1 = GL*x_kp1;%H*x_k; % The two are the same
@@ -45,7 +45,8 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
         %RLS
         lambda = 1; % forgetting factor for the RLS
         V_kp1 = (1/lambda)*(V_k - (((V_k*LHS')*(LHS*V_k))/(1+LHS*V_k*LHS')));
-        P_stacked_new = P_stacked + V_kp1*LHS'*(RHS - LHS*P_stacked);
+        gain = V_kp1*LHS'*(RHS - LHS*P_stacked)
+        P_stacked_new = P_stacked + V_kp1*LHS'*(RHS - LHS*P_stacked)
         %ending criteria
         diffAvg = 0.9*diffAvg + 0.1*(norm(P_stacked - P_stacked_new));
         %update
@@ -53,7 +54,7 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
         V_k = V_kp1;
         P_stacked = P_stacked_new;
         %bound parameter of P so they won't blow up
-        P_stacked = min(P_stacked, 1e305); %upper bound limit
+%         P_stacked = min(P_stacked, 1e305); %upper bound limit
         counter = counter + 1;
     end
     counter

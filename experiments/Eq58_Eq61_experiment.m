@@ -14,15 +14,17 @@ clear all;
     Q=eye(2);
     R=1;
     r = 10;
-    gamma=0.8; %1.0 --> LQR uses gamma = 1.0
+    gamma=1; %1.0 --> LQR uses gamma = 1.0
 %------------------
-S = calculateNumericalS(a,b,r,gamma,Q,R);
+[n,m] = size(b);
+%------------------
+S = calculateAnalyticalS(a,b,r,gamma,Q,R);
 P_analytical = calculateAnalyticalP(a,b,r,S);
-%-----LQR gain------
-GLQR = -dlqr(a,b,Q,R);
+P_ana_xu = P_analytical(1:n, n+1:end);
+P_ana_uu = P_analytical(n+1:end, n+1:end);
+GP_ana = -inv(P_ana_uu)*P_ana_xu'
 
 %---modifying & calculating Eq.61/66---
-[n,m] = size(b);
 Sxu = S(1:n, n+1:n+r*m);
 Suu = S(n+1:n+r*m,n+1:n+r*m);
 G = -pinv(Suu)*Sxu';
@@ -44,7 +46,7 @@ for i=1:numIter
     U_kpr = x(:,r+2)'*Q*x(:,r+2) + u(:,r+1)'*R*u(:,r+1);
     
     LHS(i,:) = kron(xu_k', xu_k') -gamma*kron(xu_kp1', xu_kp1');
-    RHS(i,:) = U_k; %- (gamma^r)*U_kpr;
+    RHS(i,:) = U_k; % - (gamma^r)*U_kpr;
 end
 
 P_stacked = pinv(LHS)*RHS;
@@ -54,4 +56,7 @@ P_numerical = reshape(P_stacked, [m,m]);
 
 Pxu = P_numerical(1:n, n+1:end);
 Puu = P_numerical(n+1:end, n+1:end);
-GP = -inv(Puu)*Pxu';
+GP_num = -inv(Puu)*Pxu'
+
+%-----LQR gain------
+GLQR = -dlqr(a,b,Q,R)

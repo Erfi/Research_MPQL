@@ -10,7 +10,7 @@ if(1)
     Q=eye(2);
     R=1;
     r = 5;
-    gamma=1.0; %1.0 --> LQR uses gamma = 1.0
+    gamma=1; %1.0 --> LQR uses gamma = 1.0
 end
 %------------------
 
@@ -19,26 +19,21 @@ end
 % S_num_batch = calculateNumericalS(a,b,r,gamma,Q,R);
 % S_num_RLS = calculateNumericalS_RLS(a,b,r,gamma,Q,R);
 %----Calculating P using different methods-----
-% P_batch = calculateNumericalP(a,b,Q,R,r,gamma,S_ana);
-% P_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S_num_RLS, true);
+% P_batch = calculateNumericalP(a,b,Q,R,r,gamma,S_ana, true);
+% P_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S_ana, true);
 
 %--Demo--
 [n,m] = size(b);
+numIter = 100;
+%------------------
 S = calculateNumericalS_RLS(a,b,r,gamma,Q,R); %using small r
 % GL from S
 Sxu = S(1:n, n+1:n+r*m);
 Suu = S(n+1:n+r*m,n+1:n+r*m);
 GS = -pinv(Suu)*Sxu';
 GL = GS(1:m,:); 
-GP = GL;
-numIter=50;
-for i = 1:numIter
-    P = calculateNumericalP_RLS(a,b,Q,R,r,gamma,GP(i,:),false);
-    P_xu = P(1:n, n+1:end);
-    P_uu = P(n+1:end, n+1:end);
-    GP(i+1,:) = -inv(P_uu)*P_xu';
-end
-GP;
+%-------------------
+[P,GP] = calculateOptimalP_PI(a,b,Q,R,r,gamma,GL,numIter) %Using Policy Iteration
 %LQR gain
 GLQR = -dlqr(a,b,Q,R)
 

@@ -1,6 +1,7 @@
 function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
 % This funciton calculates the P matrix (Eq.66) numerically
-% Using RLS (not batch) identification.
+% Using RLS (not batch) identification. This is basically a policy
+% evaluations step.
 %
 % Args:
 %   a: System matrix (used for simulation)
@@ -34,7 +35,7 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
     epsilon = 1e-5; % ending criteria
     counter = 0;
     while(diffAvg > epsilon)
-        u_k = GL*x_k + 0.2*randn(m,1); % u(k) with random/exploritory component 
+        u_k = GL*x_k + randn(m,1); % u(k) with random/exploritory component 
         xu_k = vertcat(x_k, u_k);
         x_kp1 = a*x_k + b*u_k; % this is a simulation by the enviroment (plant)
         u_kp1 = GL*x_kp1;%H*x_k; % The two are the same
@@ -54,9 +55,10 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
         P_stacked = P_stacked_new;
         %bound parameter of P so they won't blow up
         P_stacked = min(P_stacked, 1e305); %upper bound limit
+        P_stacked = max(P_stacked, -1e305); %lower bound
+        
         counter = counter + 1;
     end
-    counter
     l = sqrt(size(P_stacked,1));
     P = reshape(P_stacked, [l,l]);
 end

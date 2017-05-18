@@ -94,7 +94,7 @@ end
 if(runMPC)
     [A,B] = c2d(Ac, Bc, dt);
     [n,numInputs] = size(B);
-    r = 10;
+    r = 3;
     gamma = 0.9;
     S = calculateAnalyticalS(A,B,r,gamma,Q,R);
     Sxu = S(1:n, n+1:n+r*numInputs);
@@ -124,7 +124,7 @@ end
 %--------------------MPQL(implicit)----------------------
 if(runImplicitMPQL)
     [A,B] = c2d(Ac, Bc, dt);
-    r = 10;
+    r = 3;
     gamma = 0.9;
     input_vals = [-50000:10000:50000,-10000:1000:10000,-1000:100:1000,-100:10:100];
     numIter = length(Time);

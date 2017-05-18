@@ -20,9 +20,7 @@ function [x,u_history] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter, 
 %
 
     %shapes
-    [n,~] = size(a);
-    [numStates, numInputs] = size(b);
-
+    [n,m] = size(b);
     % analytical S
     S = calculateAnalyticalS(a,b,r,gamma,Q,R);
     P = calculateAnalyticalP(a,b,r,S);
@@ -31,8 +29,8 @@ function [x,u_history] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter, 
     % close_loop
     x = zeros(n,numIter);
     x(:,1) = x_init; 
-    vs = zeros(1,numInputVals^numInputs); %cost to go from taking each action
-    u_history = zeros(numInputs, numIter);
+    vs = zeros(1,numInputVals^m); %cost to go from taking each action
+    u_history = zeros(m, numIter);
     [actionSpace, actionSpaceLength] = buildActionSpace(inputVals);
     for k=1:numIter
         for i=1:actionSpaceLength %action space
@@ -51,7 +49,7 @@ function [x,u_history] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter, 
         x_open = zeros(n, numIter);
         x_open(:,1) = x_init;
         for k=1:numIter
-        x_open(:,k+1) = a*x_open(:,k) + b*zeros(numInputs,1);
+        x_open(:,k+1) = a*x_open(:,k) + b*zeros(m,1);
         end
         
         subplot(3,1,1)

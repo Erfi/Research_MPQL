@@ -1,0 +1,14 @@
+function [ G,GL,GF ] = extractGainFromS(S,n)
+% This function takes a matrix S (n+r*m x n+r*m)
+% and returns gain and sungains G, GL and GF
+%
+% Args:
+%   n: number of elements in state X -> (n,1)
+%---------------------------------------------
+Sxu = S(1:n,n+1:end);
+Suu = S(n+1:end, n+1:)
+G = -inv()
+
+
+end
+

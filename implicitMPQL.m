@@ -29,15 +29,15 @@ function [x,u_history] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter, 
     % close_loop
     x = zeros(n,numIter);
     x(:,1) = x_init; 
-    vs = zeros(1,numInputVals^m); %cost to go from taking each action
+    Qs = zeros(1,numInputVals^m); %cost to go from taking each action
     u_history = zeros(m, numIter);
     [actionSpace, actionSpaceLength] = buildActionSpace(inputVals);
     for k=1:numIter
         for i=1:actionSpaceLength %action space
             xu = vertcat(x(:,k), actionSpace(:,i));
-            vs(i) =  xu'*P*xu;
+            Qs(i) =  xu'*P*xu;
         end
-        [argvalue, argmin] = min(vs);
+        [argvalue, argmin] = min(Qs);
         optimalInput = actionSpace(:,argmin); %choose the first value of the best input row values
         u_history(:,k) = optimalInput;
         x(:,k+1) = a*x(:,k) + b*optimalInput;

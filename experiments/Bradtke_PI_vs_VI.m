@@ -92,17 +92,36 @@ K_PI = K;
 end
 %==========END OF POLICY ITERATION========
 
+disp('--- Policy Iteration results ---');
+Hu_PI
+K_PI
+eig_PI = eig(a+b*K_PI)
+%%
+%-----System Phan's Experiment--------
+if(1)
+    ac=[0 1;-100 -1];
+    bc=[0 1]';
+    dt = 0.01;
+    [a,b]=c2d(ac,bc,dt);
+    c=eye(2,2);
+    d=zeros(2,1);
+    Q=[1 0;0 50];
+    R=1;
+    gamma = 1.0;
+    K=[0 -1];
+    xic=[1 -2]';
+end
+%-------------------------------------
 %==============VALUE ITERATION============
-if(0)
+if(1)
 disp('Value Iteration...');
-numIters_RLS = 50000;
+numIters_RLS = 10000;
 [n,m] = size(b);
 Hu_stacked = zeros((n+m)^2,1); %Q-function parameterization matrix
 V_k = eye((n+m)^2)*10; % initialize autocorrolation matrix (large values --> low initial confidence)
 x_k = [1,-5]';
-% for t = 1:numIters_RLS
-t = 0;
-while (t < 10000)
+
+for t = 1:numIters_RLS
     if mod(t,1000)==0
         V_k = eye((n+m)^2)*1;
     end
@@ -133,7 +152,6 @@ while (t < 10000)
         K = K_temp;
         x_k = x_kp1;
         V_k = V_kp1;
-        t = t+1;
     end
 end
 l = sqrt(size(Hu_stacked,1));
@@ -142,21 +160,20 @@ K_VI = K;
 end
 %==========END OF VALUE ITERATION=========
 
+disp('--- Value Iteration results ---');
+Hu_VI
+K_VI
+eig_VI = eig(a+b*K_VI)
+
+%% 
 %-------K_LQR------
 disp('--- LQR results ---');
 K_LQR = -dlqr(a,b,Q,R);
 K_LQR
 eig_LQR = eig(a+b*K_LQR)
 
-disp('--- Policy Iteration results ---');
-Hu_PI
-K_PI
-eig_PI = eig(a+b*K_PI)
 
-% disp('--- Value Iteration results ---');
-% Hu_VI
-% K_VI
-% eig_VI = eig(a+b*K_VI)
+
 
 
 

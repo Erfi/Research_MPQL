@@ -36,21 +36,21 @@ function [ P,GP, x_hist, u_hist, LHS_hist, RHS_hist] = calculateOptimalP_VI(a,b,
         %update
         x_k = x_kp1;
         V_k = V_kp1;
-        P_stacked_temp = P_stacked_new;
+%         P_stacked_temp = P_stacked_new;
         %bound parameter of P so they won't blow up
 %         P_stacked = min(P_stacked, 1e305); %upper bound limit
 %         P_stacked = max(P_stacked, -1e305); %lower bound
         %++++VALUE ITERATION++++
-        l = sqrt(size(P_stacked_temp,1));
-        PP = reshape(P_stacked_temp, [l,l]);
+        l = sqrt(size(P_stacked_new,1));
+        PP = reshape(P_stacked_new, [l,l]);
         PP_xu = PP(1:n,n+1:end);
         PP_uu = PP(n+1:end, n+1:end);
         GP(counter+1,:) = -inv(PP_uu)*PP_xu';
         if(max(abs(eig(a+b*GP(counter+1,:))))>1)
             GP(counter+1,:) = GP(counter,:);
-            disp('skipping the unstable gain');
+            disp('Value Iteration: skipping the unstable gain');
         else
-            P_stacked = P_stacked_temp;
+            P_stacked = P_stacked_new;
         end
         %+++++++++++++++++++++++ 
         counter = counter + 1;

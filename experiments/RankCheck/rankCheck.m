@@ -1,6 +1,4 @@
-% We know that we can move form a policy iteration scheme toward a value
-% iteration scheme by changing the ending criteria of the RLS algorithm.
-% However we have noticed that the Value Iteration scheme does not
+% we have noticed that the Value Iteration scheme does not
 % converge. Here we are trying to figure out why. And for that purpose we
 % are checking the rank of the LHS matrix.
 %------------------------------------------------------------------------

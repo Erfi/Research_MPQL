@@ -24,7 +24,7 @@ end
 
 %--Demo--
 [n,m] = size(b);
-numIter = 100;
+numIter = 10;
 %------------------
 S = calculateNumericalS_RLS(a,b,r,gamma,Q,R); %using small r
 % GL from S

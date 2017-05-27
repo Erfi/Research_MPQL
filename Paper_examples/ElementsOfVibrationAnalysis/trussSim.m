@@ -125,7 +125,7 @@ end
 if(runImplicitMPQL)
     [A,B] = c2d(Ac, Bc, dt);
     r = 3;
-    gamma = 0.9;
+    gamma = 1;
     input_vals = [-50000:10000:50000,-10000:1000:10000,-1000:100:1000,-100:10:100];
     numIter = length(Time);
     [X_hist, U_hist] = implicitMPQL(A,B,Q,R,r,gamma,X0,input_vals, numIter, false);

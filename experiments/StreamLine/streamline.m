@@ -19,12 +19,12 @@ end
 numIter = 2000;
 x_init = randn(n,1);
 Gain = randn(m,n);
-S = (1e-3)*randn(n+r*m, n+r*m);
-P = (1e-3)*randn(n+m, n+m);
+S = (1e-10)*randn(n+r*m, n+r*m);
+P = (1e-10)*randn(n+m, n+m);
 X = [x_init, zeros(n,numIter-1)];
 U = zeros(m,numIter-1);
-V_S = eye((n+r*m)^2)*1e6; %inverse corrolation matrix for S update
-V_P = eye((n+m)^2)*1e6;   %inverse corrolation matrix for P update
+V_S = eye((n+r*m)^2)*1e8; %inverse corrolation matrix for S update
+V_P = eye((n+m)^2)*1e8;   %inverse corrolation matrix for P update
 %-------------------
 
 for k = 1:numIter %Main Loop

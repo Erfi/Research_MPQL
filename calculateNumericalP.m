@@ -42,8 +42,8 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
         RHS(i,:) = U_k;
     end
     %---- checking LHS matrix's condition ----
-    condition_Number = cond(LHS)
-    rank_Number = rank(LHS)
+%     condition_Number = cond(LHS)
+%     rank_Number = rank(LHS)
 %     [U,S,V] = svd(LHS);
 %     diag(S)
     %-----------------------------------------

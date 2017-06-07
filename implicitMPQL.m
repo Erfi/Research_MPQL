@@ -31,10 +31,10 @@ TEST_MODE = false;
     
     %---P matrix (choose one)---
 %     P_anas = calculateAnalyticalPs(a,b,r,S);
-    P_ana = calculateAnalyticalP(a,b,r,S);
+%     P_ana = calculateAnalyticalP(a,b,r,S);
 %     P_num_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S,true);
-%     P_num_batch = calculateNumericalP(a,b,Q,R,r,gamma,S,true);
-    P = P_ana;
+    P_num_batch = calculateNumericalP(a,b,Q,R,r,gamma,S,true);
+    P = P_num_batch;
     %----------------------------------------
     
     % simulation

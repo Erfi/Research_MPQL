@@ -5,46 +5,50 @@
 clear all;
 close all
 
-n = 8; %number of states (degrees of freedom)
-m = 4; %number of inputs (we are assuming single input)
+% n = 8; %number of states (degrees of freedom)
+% m = 4; %number of inputs (we are assuming single input)
+% 
+% massMatrix = eye(8)*100;
+% stiffnessMatrix = [27071.1 0 0 0 -10000.0 0 -3535.5 -3535.5;
+%                    0 17071.1 0 -10000.0 0 0 -3535.5 -3535.5;
+%                    0 0 27071.1 0 -3535.5 3535.5 -10000.0 0;
+%                    0 -10000.0 0 17071.1 3535.5 -3535.5 0 0;
+%                    -10000.0 0 -3535.5 3535.5 27071.1 0 0 0;
+%                    0 0 3535.5 -3535.5 0 17071.1 0 -10000.0;
+%                    -3535.5 -3535.5 -10000.0 0 0 0 27071.1 0;
+%                    -3535.5 -3535.5 0 0 0 -10000.0 0 17071.1];
+%  dampingMatrix = [136.4 0 0 0 -50.0 0 -17.7 -17.7;
+%                   0 86.4 0 -50.0 0 0 -17.7 -17.7;
+%                   0 0 136.4 0 -17.7 17.7 -50.0 0;
+%                   0 -50.0 0 86.4 17.7 -17.7 0 0;
+%                   -50.0 0 -17.7 17.7 136.4 0 0 0;
+%                   0 0 17.7 -17.7 0 86.4 0 -50.0;
+%                   -17.7 -17.7 -50.0 0 0 0 136.4 0;
+%                   -17.7 -17.7 0 0 0 -50.0 0 86.4]      * 0.0; % decrease damping
+%                
+% %---System Dynamic---
+% Ac = [zeros(n,n), eye(n);
+%       -inv(massMatrix)*stiffnessMatrix -inv(massMatrix)*dampingMatrix];
+% Bf =  zeros(n,m);
+% Bf(1,1) = 1;
+% Bf(2,2) = 1;
+% Bf(7,3) = 1;
+% Bf(8,4) = 1;
+% Bc = [zeros(n,m);
+%       inv(massMatrix)*Bf];
+% Cc = eye(1,2*n); % n-output 
+% Dc = 0; % direct transition matrix
+% Q = eye(2*n); 
+% R = 1*1e-4;
+% gamma = 1; % discount factor
+% r = 5; % prediction horizon
+% dt = 0.05; % sampling delta using ~6 * highest frequency of the system
+% [A,B] = c2d(Ac, Bc, dt); % discrete system dynamic
+% %--------------------
 
-massMatrix = eye(8)*100;
-stiffnessMatrix = [27071.1 0 0 0 -10000.0 0 -3535.5 -3535.5;
-                   0 17071.1 0 -10000.0 0 0 -3535.5 -3535.5;
-                   0 0 27071.1 0 -3535.5 3535.5 -10000.0 0;
-                   0 -10000.0 0 17071.1 3535.5 -3535.5 0 0;
-                   -10000.0 0 -3535.5 3535.5 27071.1 0 0 0;
-                   0 0 3535.5 -3535.5 0 17071.1 0 -10000.0;
-                   -3535.5 -3535.5 -10000.0 0 0 0 27071.1 0;
-                   -3535.5 -3535.5 0 0 0 -10000.0 0 17071.1];
- dampingMatrix = [136.4 0 0 0 -50.0 0 -17.7 -17.7;
-                  0 86.4 0 -50.0 0 0 -17.7 -17.7;
-                  0 0 136.4 0 -17.7 17.7 -50.0 0;
-                  0 -50.0 0 86.4 17.7 -17.7 0 0;
-                  -50.0 0 -17.7 17.7 136.4 0 0 0;
-                  0 0 17.7 -17.7 0 86.4 0 -50.0;
-                  -17.7 -17.7 -50.0 0 0 0 136.4 0;
-                  -17.7 -17.7 0 0 0 -50.0 0 86.4]      * 0.0; % decrease damping
-               
-%---System Dynamic---
-Ac = [zeros(n,n), eye(n);
-      -inv(massMatrix)*stiffnessMatrix -inv(massMatrix)*dampingMatrix];
-Bf =  zeros(n,m);
-Bf(1,1) = 1;
-Bf(2,2) = 1;
-Bf(7,3) = 1;
-Bf(8,4) = 1;
-Bc = [zeros(n,m);
-      inv(massMatrix)*Bf];
-Cc = eye(1,2*n); % n-output 
-Dc = 0; % direct transition matrix
-Q = eye(2*n); 
-R = 1*1e-4;
-gamma = 1; % discount factor
-r = 5; % prediction horizon
-dt = 0.05; % sampling delta using ~6 * highest frequency of the system
-[A,B] = c2d(Ac, Bc, dt); % discrete system dynamic
-%--------------------
+[A,B,Cc,Dc,Q,R,Ac,Bc] = getSystemModel(3);
+dt = 0.05;
+[n,m] = size(B);
 
 %--- Checking for controlibility ---
 Co = ctrb(A,B);
@@ -69,8 +73,8 @@ end
 %----------------------------------------------------
 
 %------------Simulation Run Flags--------------------
-runContinuousLQR = false;
-runDiscreteLQR =   false;
+runContinuousLQR = true;
+runDiscreteLQR =   true;
 runMPC =           true;
 runImplicitMPQL =  true;
 %----------------------------------------------------
@@ -78,7 +82,8 @@ runImplicitMPQL =  true;
 %------------Simulation Variables--------------------
 Time = 0:dt:50;
 U = zeros(size(Time,2),m); %single input
-X0 = [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
+X0 = zeros(1,n);
+X0(1,1) = 1;
 %----------------------------------------------------
 
 %--------------Continuous-Time LQR-----------------------
@@ -106,7 +111,6 @@ end
 
 %--------------Discrete-Time LQR-----------------------
 if(runDiscreteLQR)
-[A,B] = c2d(Ac, Bc, dt);
 
 %Open_Loop Simulation Using LQR (discrete)
 [Y,~]=dlsim(A,B,Cc,Dc,U,X0);
@@ -116,7 +120,7 @@ plot(Time,Y);
 title('Open-Loop Simulation LQR (discrete-time)');
 
 %Closed_Loop Simulation Using LQR (discrete)
-Kd = -dlqr(A,B,Q,R);
+Kd = -dlqr(A,B,Q,R)
 [X_hist, U_hist] = simulate(A,B,Kd,X0,length(Time));
 subplot(3,1,2);
 plot(Time,Cc*X_hist);
@@ -131,15 +135,13 @@ end
 
 %-------------------------MPC----------------------------
 if(runMPC)
-    [A,B] = c2d(Ac, Bc, dt);
-    [n,m] = size(B);
-    r = 100;
+    r = 200;
     gamma = 1;
     S = calculateAnalyticalS(A,B,r,gamma,Q,R);
     Sxu = S(1:n, n+1:n+r*m);
     Suu = S(n+1:n+r*m,n+1:n+r*m);
     G = -pinv(Suu)*Sxu';
-    GL = G(1:m,:);
+    GL = G(1:m,:)
     A_cl = A+B*GL;
 
     %Open_Loop Simulation Using LQR (discrete)
@@ -164,14 +166,12 @@ end
 
 %--------------------MPQL(implicit)----------------------
 if(runImplicitMPQL)
-    [A,B] = c2d(Ac, Bc, dt);
-    r = 100;
+    r = 3;
     gamma = 1;
+    
     input_vals = [-500000:100000:500000,-10000:1000:10000,-1000:100:1000,-100:10:100];
-    input_vals = [-10000,10000,-1000,1000,-100,100];
+    input_vals = [-10000,10000,-1000,1000,-100,100,-10,10,-1,1,-0.1,0.1,0];
     input_vals = [input_vals;
-                  input_vals;
-                  input_vals;
                   input_vals];
     numIter = length(Time);
     [X_hist, U_hist] = implicitMPQL(A,B,Q,R,r,gamma,X0,input_vals, numIter, false);

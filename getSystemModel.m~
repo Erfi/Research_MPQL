@@ -1,0 +1,30 @@
+function [ A,B,C,D ] = getSystemModel( sysNumber )
+% Since writing out the system model in every driver file can makes things
+% messy this function will give you the system model that you request. 
+%
+% Args:
+%   sysNumber: Number of your desired system
+%
+% Returns:
+%   A: System Dynamic Matrix
+%   B: System Input Matrix
+%   C: Output Matrix
+%   D: Direct Transition Matrix
+%---------------------------------
+%----- System #1 ----
+% A 2 DOF system
+%--------------------
+%
+%----- System #2 ----
+% An 8 DOF system
+%--------------------
+%--------------------------------------------------------------------------
+
+if (sysNumber == 1)
+    
+    
+    elsif
+
+
+end
+

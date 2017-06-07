@@ -17,13 +17,26 @@ function [x,u_history] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter, 
 % Returns:
 %   x: The state values throughout the simulation
 %   u_history: Control Signals throughout the simulation
-%
+%--------------------------------------------------------------------------
+
+TEST_MODE = false;
 
     %shapes
     [n,m] = size(b);
-    % analytical S
+    
+    %---S matrix (choose one)---
     S = calculateAnalyticalS(a,b,r,gamma,Q,R);
-    P = calculateAnalyticalP(a,b,r,S);
+%     S = calculateNumericalS(a,b,r,gamma,Q,R);
+    %----------------------------------------
+    
+    %---P matrix (choose one)---
+%     P_anas = calculateAnalyticalPs(a,b,r,S);
+    P_ana = calculateAnalyticalP(a,b,r,S);
+%     P_num_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S,true);
+%     P_num_batch = calculateNumericalP(a,b,Q,R,r,gamma,S,true);
+    P = P_ana;
+    %----------------------------------------
+    
     % simulation
     numInputVals = size(inputVals,2);
     % close_loop
@@ -69,6 +82,66 @@ function [x,u_history] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter, 
         title('Control Signal') 
         ylabel('control input')
         xlabel('time step')
+    end
+    
+    
+    
+    
+    if TEST_MODE
+        %--- GP numerical (RLS or Batch) ---
+        Pxu = P(1:n, n+1:end);
+        Puu = P(n+1:end, n+1:end);
+        GP_num = -inv(Puu)*Pxu';
+        eigGP_num = eig(a+b*GP_num);
+        %-------------------
+
+        %--- GP from Policy Iteration ---
+        Sxu = S(1:n, n+1:n+r*m);
+        Suu = S(n+1:n+r*m,n+1:n+r*m);
+        G = -pinv(Suu)*Sxu';
+        GL = G(1:m,:);
+        [P_PI,GP_PI_hist] = calculateOptimalP_PI(a,b,Q,R,r,gamma,GL,10);
+
+        Pxu = P_PI(1:n, n+1:end);
+        Puu = P_PI(n+1:end, n+1:end);
+        GP_PI = -inv(Puu)*Pxu';
+        eigGP_PI = eig(a+b*GP_PI);
+        %------------------------------
+
+        %--- GLQR ---
+        G_LQR = -dlqr(a,b,Q,R);
+        eigG_LQR = eig(a+b*G_LQR);
+        %------------
+
+        %--- Display Test Results---
+        disp('ImplicitMPQL: Test Mode Results:')
+        disp('Gains:')
+        G_LQR
+        GP_num
+        GP_PI
+
+        disp('Eigen Values:')
+        eigG_LQR 
+        eigGP_num
+        eigGP_PI
+
+        figure
+        plot(GP_PI_hist)
+        hold on
+        plot(repmat(GP_num,[size(GP_PI_hist,1),1]))
+        hold off
+        title('GP\_num vs GP\_IP')
+        xlabel('Iteration Steps (for Policy Iteration)')
+        ylabel('Gain values')
+        
+        figure
+        plot(GP_PI_hist)
+        hold on
+        plot(repmat(G_LQR,[size(GP_PI_hist,1),1]))
+        hold off
+        title('G\_LQR vs GP\_IP')
+        xlabel('Iteration Steps (for Policy Iteration)')
+        ylabel('Gain values')
     end
 end
 

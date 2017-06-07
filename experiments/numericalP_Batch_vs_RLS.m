@@ -5,19 +5,13 @@
 %-------------------------------------------------------------------------
 clear all;
 
-%------System (marginally stable)------
-    ac=[0 1; -50 0];
-    bc=[0 1]';
-    dt = 0.05;
-    [a,b] = c2d(ac, bc, dt);
-    Q=eye(2);
-    R=1;
-    r = 100;
-    gamma=1; %1.0 --> LQR uses gamma = 1.0
-%------------------
+[a,b,c,d,Q,R] = getSystemModel(2);
+r = 2;
+gamma = 1;
 [n,m] = size(b);
-%------------------
-S = calculateAnalyticalS(a,b,r,gamma,Q,R);
+
+%--------------------------------------
+S = calculateNumericalS_RLS(a,b,r,gamma,Q,R);
 P_ana = calculateAnalyticalP(a,b,r,S);
 P_batch = calculateNumericalP(a,b,Q,R,r,gamma,S, true);
 P_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S, true);

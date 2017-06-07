@@ -21,7 +21,8 @@ function [ S ] = calculateNumericalS_RLS( a,b,r,gamma, Q,R )
     diffAvg = 1; % average difference in S_stacked for each iteration
     epsilon = 1e-3; % ending criteria
     counter = 0;
-    while(diffAvg > epsilon) 
+%     while(diffAvg > epsilon)
+    for t=1:((n+r*m)^2)*5
         x = zeros(n, r+2);
         x(:,1) = 2*randn(n,1);
         us = 0.2*randn(m,r+1);
@@ -48,15 +49,7 @@ function [ S ] = calculateNumericalS_RLS( a,b,r,gamma, Q,R )
         LHS = kron(xu_k', xu_k') - gamma*kron(xu_kp1', xu_kp1');
         RHS = U_k - (gamma^r)*U_kpr;
         %RLS
-        lambda = 1; % forgetting factor for the RLS
-        V_kp1 = (1/lambda)*(V_k - (((V_k*LHS')*(LHS*V_k))/(1+LHS*V_k*LHS')));
-        S_stacked_new = S_stacked + V_kp1*LHS'*(RHS - LHS*S_stacked);
-        %ending criteria
-        diffAvg = 0.9*diffAvg + 0.1*(norm(S_stacked - S_stacked_new));
-        %update
-        V_k = V_kp1;
-        S_stacked = S_stacked_new;
-        counter = counter+1;
+        [V_k, S_stacked] = rls_one_step(V_k,S_stacked, LHS, RHS);
     end
     l = sqrt(size(S_stacked,1));
     S = reshape(S_stacked, [l,l]);

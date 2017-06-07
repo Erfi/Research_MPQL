@@ -27,10 +27,12 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
     else
         GL = SorGL;
     end
+    
     numIter = 2*(n+m)^2; %2 * number of equations nessessary (so we will have enough rank)
+    
     for i=1:numIter
         x_k = randn(n,1);
-        u_k = GL*x_k + 0.01*randn(m,1);%randn;
+        u_k = GL*x_k + randn(m,1);
         xu_k = vertcat(x_k, u_k);
         x_kp1 = a*x_k + b*u_k; % this is a simulation by the enviroment (plant)
         u_kp1 = GL*x_kp1;%H*x_k; % The two are the same
@@ -39,8 +41,13 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
         LHS(i,:) = kron(xu_k', xu_k') -gamma*kron(xu_kp1', xu_kp1');
         RHS(i,:) = U_k;
     end
+    %---- checking LHS matrix's condition ----
+    condition_Number = cond(LHS)
+    rank_Number = rank(LHS)
+%     [U,S,V] = svd(LHS);
+%     diag(S)
+    %-----------------------------------------
     P_stacked = pinv(LHS)*RHS;
     m = sqrt(size(P_stacked,1));
     P = reshape(P_stacked, [m,m]);
 end
-

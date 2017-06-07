@@ -19,12 +19,13 @@ function [ P, GP ] = calculateOptimalP_PI( a,b,Q,R,r,gamma,G_init,numIter)
     [n,m] = size(b);
     GP = G_init;
     for i = 1:numIter
-        %----Policy Evaluation----
+    %----Policy Evaluation----
         P = calculateNumericalP_RLS(a,b,Q,R,r,gamma,GP(i,:),false);
-        %----Policy Improvement----
+%         P = calculateNumericalP(a,b,Q,R,r,gamma,GP(i,:),false);
+    %----Policy Improvement----
         P_xu = P(1:n, n+1:end);
         P_uu = P(n+1:end, n+1:end);
-        GP(i+1,:) = -inv(P_uu)*P_xu';
+        GP(i+1,:) = -pinv(P_uu)*P_xu';
     end
 end
 

@@ -29,12 +29,12 @@ V_P = eye((n+m)^2)*1e8;   %inverse corrolation matrix for P update
 
 for k = 1:numIter %Main Loop
     X_k = X(:,k);
-    U_k = Gain*X_k + 0.1*randn(m,1); %---PLUS EXPLORATION---
+    U_k = Gain*X_k + max(max(abs(Gain)))*randn(m,1); %---PLUS EXPLORATION---
     X_kp1 = simStep(a,b,U_k,X_k);
     %- Store state and inputs - 
     U(:,k) = U_k;
     X(:,k+1) = X_kp1;
-    U(:,k+1) = Gain*X_kp1 + 0.1*randn(m,1); %---PLUS EXPROLATION---
+    U(:,k+1) = Gain*X_kp1 + max(max(abs(Gain)))*randn(m,1); %---PLUS EXPROLATION---
     
     if(k > r) % needed r (+1) steps before we can continue with S update
         %----Update S-----
@@ -47,11 +47,9 @@ for k = 1:numIter %Main Loop
         Util_kpr = X(:,k+1)'*Q*X(:,k+1) + U(:,k)'*R*U(:,k);
         LHS = kron(XUr_k', XUr_k') - gamma*kron(XUr_kp1', XUr_kp1');
         RHS = Util_k - (gamma^(r))*Util_kpr;
-        %- RLS -
+        %- RLS - 
         S_stacked = S(:);
-        lambda = 1; % forgetting factor for the RLS
-        V_S = (1/lambda)*(V_S - (((V_S*LHS')*(LHS*V_S))/(1+LHS*V_S*LHS')));
-        S_stacked = S_stacked + V_S*LHS'*(RHS - LHS*S_stacked);
+        [V_S, S_stacked] = rls_one_step(V_S,S_stacked,LHS,RHS);
         %- update S-
         l = n+r*m;
         S = reshape(S_stacked,[l,l]);
@@ -69,9 +67,7 @@ for k = 1:numIter %Main Loop
         RHS = Util_k;
         %-RLS-
         P_stacked = P(:);
-        lambda = 1; % forgetting factor for the RLS
-        V_P = (1/lambda)*(V_P - (((V_P*LHS')*(LHS*V_P))/(1+LHS*V_P*LHS')));
-        P_stacked = P_stacked + V_P*LHS'*(RHS - LHS*P_stacked);
+        [V_P, P_stacked] = rls_one_step(V_P, P_stacked, LHS, RHS);
         %-update P-
         l = n+m;
         P = reshape(P_stacked, [l,l]);
@@ -98,6 +94,9 @@ xlabel('iteration number');
 ylabel('input u')
  
 
-eig(a+b*Gain)
+eig_P = eig(a+b*Gain)
+eig_P_mag = abs(eig_P)
+
 Glqr = -dlqr(a,b,Q,R)
-eig(a+b*Glqr)
+eig_LQR = eig(a+b*Glqr)
+eig_LQR_mag = abs(eig_LQR)

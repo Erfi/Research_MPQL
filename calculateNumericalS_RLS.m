@@ -25,7 +25,7 @@ function [ S ] = calculateNumericalS_RLS( a,b,r,gamma, Q,R )
     for t=1:((n+r*m)^2)*5
         x = zeros(n, r+2);
         x(:,1) = 2*randn(n,1);
-        us = 0.2*randn(m,r+1);
+        us = randn(m,r+1);
         % calculating x(k), x(k+1) and x(k+r)
         for k=1:r+1
             x(:,k+1) = a*x(:,k) + b*us(:,k);

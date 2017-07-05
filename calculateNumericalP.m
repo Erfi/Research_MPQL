@@ -28,24 +28,22 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
         GL = SorGL;
     end
     
-    numIter = 2*(n+m)^2; %2 * number of equations nessessary (so we will have enough rank)
-    
+    numIter = 2*((n+m)^2); % 2 * number of equations nessessary (so we will have enough rank)
+    exploration_coeff = max(max(abs(GL))); % 100% of the max of GL
     for i=1:numIter
         x_k = randn(n,1);
-        u_k = GL*x_k + randn(m,1);
+        u_k = GL*x_k + exploration_coeff*randn(m,1);
         xu_k = vertcat(x_k, u_k);
         x_kp1 = a*x_k + b*u_k; % this is a simulation by the enviroment (plant)
-        u_kp1 = GL*x_kp1;%H*x_k; % The two are the same
+        u_kp1 = GL*x_kp1;
         xu_kp1 = vertcat(x_kp1,u_kp1);
         U_k = x_kp1'*Q*x_kp1 + u_k'*R*u_k;
-        LHS(i,:) = kron(xu_k', xu_k') -gamma*kron(xu_kp1', xu_kp1');
+        LHS(i,:) = kron(xu_k', xu_k') - gamma*kron(xu_kp1', xu_kp1');
         RHS(i,:) = U_k;
     end
     %---- checking LHS matrix's condition ----
-%     condition_Number = cond(LHS)
-%     rank_Number = rank(LHS)
-%     [U,S,V] = svd(LHS);
-%     diag(S)
+    condition_Number = cond(LHS)
+    rank_Number = rank(LHS)
     %-----------------------------------------
     P_stacked = pinv(LHS)*RHS;
     m = sqrt(size(P_stacked,1));

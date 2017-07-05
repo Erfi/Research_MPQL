@@ -5,69 +5,14 @@
 % close to 1.
 
 clear all;
+%--- System model ---
+[a,b,C,D,Q,R,ac,bc] = getSystemModel(1);
+%--------------------
 
-%====== System (marginally stable)======
-if(0)
-    ac=[0 1; -50 0];
-    bc=[0 1]';
-    dt = 0.05;
-    [a,b] = c2d(ac, bc, dt);
-    Q=eye(2);
-    R=1;
-    r = 10;
-    gamma=1; %1.0 --> LQR uses gamma = 1.0
-
-%------------------
 [n,m] = size(b);
-%------------------
-end
-%======= END OF MARGINALLY STABLE SYSTEM =======
-
-%======= THE BRIDGE SYSTEM =======
-if(1)
-n = 8; %number of states (degrees of freedom)
-m = 4; %number of inputs (we are assuming single input)
-
-massMatrix = eye(8)*100;
-stiffnessMatrix = [27071.1 0 0 0 -10000.0 0 -3535.5 -3535.5;
-                   0 17071.1 0 -10000.0 0 0 -3535.5 -3535.5;
-                   0 0 27071.1 0 -3535.5 3535.5 -10000.0 0;
-                   0 -10000.0 0 17071.1 3535.5 -3535.5 0 0;
-                   -10000.0 0 -3535.5 3535.5 27071.1 0 0 0;
-                   0 0 3535.5 -3535.5 0 17071.1 0 -10000.0;
-                   -3535.5 -3535.5 -10000.0 0 0 0 27071.1 0;
-                   -3535.5 -3535.5 0 0 0 -10000.0 0 17071.1];
- dampingMatrix = [136.4 0 0 0 -50.0 0 -17.7 -17.7;
-                  0 86.4 0 -50.0 0 0 -17.7 -17.7;
-                  0 0 136.4 0 -17.7 17.7 -50.0 0;
-                  0 -50.0 0 86.4 17.7 -17.7 0 0;
-                  -50.0 0 -17.7 17.7 136.4 0 0 0;
-                  0 0 17.7 -17.7 0 86.4 0 -50.0;
-                  -17.7 -17.7 -50.0 0 0 0 136.4 0;
-                  -17.7 -17.7 0 0 0 -50.0 0 86.4];
- dampingMatrix = zeros(n,n);
-               
-%---System Dynamic---
-Ac = [zeros(n,n), eye(n);
-      -inv(massMatrix)*stiffnessMatrix -inv(massMatrix)*dampingMatrix];
-Bf =  zeros(n,m);
-Bf(1,1) = 1;
-Bf(2,2) = 1;
-Bf(7,3) = 1;
-Bf(8,4) = 1;
-Bc = [zeros(n,m);
-      inv(massMatrix)*Bf];
-Cc = eye(1,2*n); % n-output 
-Dc = 0; % direct transition matrix
-Q = eye(2*n); 
-R = eye(m)*1e-4;
-gamma = 1; % discount factor
-r = 5; % prediction horizon
-dt = 0.05; % sampling delta using ~6 * highest frequency of the system
-[a,b] = c2d(Ac, Bc, dt); % discrete system dynamic
-[n,m] = size(Bc);
-end
-%====== END OF THE BRIDGE SYSTEM =====
+dt = 0.05;
+r = 10;
+gamma = 1;
 
 S = calculateAnalyticalS(a,b,r,gamma,Q,R);
 Sxu = S(1:n, n+1:n+r*m);

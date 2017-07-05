@@ -3,61 +3,12 @@
 clear all;
 close all;
 
-% 2 DOF system
-if(0)
-    disp('2 DOF system is selected')
-    ac=[0 1; -50 0];
-    bc=[0 1]';
-    dt = 0.05;
-    [a,b] = c2d(ac, bc, dt);
-    Q=eye(2);
-    R=1;
-end
+%--- System Model ---
+[a,b,C,D,Q,R,ac,bc] = getSystemModel(3);
+%--------------------
 
-% 8 DOF system
-if(1)
-    disp(' 8 DOF system is selected')
-    n = 8; %number of states (degrees of freedom)
-    m = 4; %number of inputs (we are assuming single input)
-    massMatrix = eye(8)*100;
-    stiffnessMatrix = [27071.1 0 0 0 -10000.0 0 -3535.5 -3535.5;
-                       0 17071.1 0 -10000.0 0 0 -3535.5 -3535.5;
-                       0 0 27071.1 0 -3535.5 3535.5 -10000.0 0;
-                       0 -10000.0 0 17071.1 3535.5 -3535.5 0 0;
-                       -10000.0 0 -3535.5 3535.5 27071.1 0 0 0;
-                       0 0 3535.5 -3535.5 0 17071.1 0 -10000.0;
-                       -3535.5 -3535.5 -10000.0 0 0 0 27071.1 0;
-                       -3535.5 -3535.5 0 0 0 -10000.0 0 17071.1];
-     dampingMatrix = [136.4 0 0 0 -50.0 0 -17.7 -17.7;
-                      0 86.4 0 -50.0 0 0 -17.7 -17.7;
-                      0 0 136.4 0 -17.7 17.7 -50.0 0;
-                      0 -50.0 0 86.4 17.7 -17.7 0 0;
-                      -50.0 0 -17.7 17.7 136.4 0 0 0;
-                      0 0 17.7 -17.7 0 86.4 0 -50.0;
-                      -17.7 -17.7 -50.0 0 0 0 136.4 0;
-                      -17.7 -17.7 0 0 0 -50.0 0 86.4];
-     dampingMatrix = zeros(n,n);
-
-    %---System Dynamic---
-    Ac = [zeros(n,n), eye(n);
-          -inv(massMatrix)*stiffnessMatrix -inv(massMatrix)*dampingMatrix];
-    Bf =  zeros(n,m);
-    Bf(1,1) = 1;
-    Bf(2,2) = 1;
-    Bf(7,3) = 1;
-    Bf(8,4) = 1;
-    
-    Bc = [zeros(n,m);
-          inv(massMatrix)*Bf];
-    Cc = eye(1,2*n); % n-output 
-    Dc = 0; % direct transition matrix
-    Q = eye(2*n); 
-    R = 1*1e-4;
-    dt = 0.05; % sampling delta using ~6 * highest frequency of the system
-    [a,b] = c2d(Ac, Bc, dt); % discrete system dynamic
-    end
-%==========================================================================
 [n,m] = size(b);
+dt = 0.05;
 r = 10;
 gamma = 1;
 
@@ -100,5 +51,7 @@ P_num_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S,true);
 Pxu = P_num_RLS(1:n, n+1:end);
 Puu = P_num_RLS(n+1:end, n+1:end);
 GP_num_RLS = -inv(Puu)*Pxu'
+%-------
+GLQR = -dlqr(a,b,Q,R)
 
 

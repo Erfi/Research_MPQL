@@ -16,11 +16,11 @@ function [ Ps ] = calculateAnalyticalPs(a,b,r,S)
     Sxu = S(1:n, n+1:n+r*m);
     Suu = S(n+1:n+r*m,n+1:n+r*m);
     G = -pinv(Suu)*Sxu';
-    GF = G(2:end,:);
+    GF = G(m+1:end,:);
     
-    Szz = S(1:n+1,1:n+1);
-    Szx = S(1:n+1, n+2:n+r*m);
-    Sxx = S(n+2:n+r*m,n+2:n+r*m);
+    Szz = S(1:n+m,1:n+m);
+    Szx = S(1:n+m, n+m+1:n+r*m);
+    Sxx = S(n+m+1:end,n+m+1:end);
     SG = [Szz, Szx*GF;
           GF'*Szx', GF'*Sxx*GF];
 

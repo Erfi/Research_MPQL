@@ -1,6 +1,6 @@
 function [ A,B,C,D,Q,R,Ac,Bc ] = getSystemModel( sysNumber )
-% Since writing out the system model in every driver file can makes things
-% messy this function will give you the system model that you request. 
+% Since writing out the system model in every driver file can make things
+% messy, this function will give you the system model that you request. 
 %
 % Args:
 %   sysNumber: Number of your desired system
@@ -57,7 +57,7 @@ elseif (sysNumber == 2)
                   -50.0 0 -17.7 17.7 136.4 0 0 0;
                   0 0 17.7 -17.7 0 86.4 0 -50.0;
                   -17.7 -17.7 -50.0 0 0 0 136.4 0;
-                  -17.7 -17.7 0 0 0 -50.0 0 86.4]      * 0.0; % decrease damping
+                  -17.7 -17.7 0 0 0 -50.0 0 86.4] * 0.0; %decreasing the damping
 
     %---System Dynamic---
     Ac = [zeros(n,n), eye(n);
@@ -68,11 +68,11 @@ elseif (sysNumber == 2)
     Bf(7,3) = 1;
     Bf(8,4) = 1;
     Bc = [zeros(n,m);
-      inv(massMatrix)*Bf];
-    C = eye(1,2*n); % n-output 
-    D = 0; % direct transition matrix
-    Q = eye(2*n); 
-    R = eye(m)*1e-4;
+      pinv(massMatrix)*Bf];
+    C=eye(n,2*n);
+    D = zeros(size(C,1),m); % direct transition matrix
+    Q = 100000*eye(2*n); 
+    R = eye(m);
     dt = 0.05; % sampling delta using ~6 * highest frequency of the system
     [A,B] = c2d(Ac, Bc, dt); % discrete system dynamic
 
@@ -82,8 +82,8 @@ elseif (sysNumber == 3)
     
     m1 = 1;
     m2 = 1;
-    k1 = 1;
-    k2 = 1;
+    k1 = 100;
+    k2 = 100;
     c1 = 0.1;
     c2 = 0.1;
     Mass = [m1 0;
@@ -99,13 +99,13 @@ elseif (sysNumber == 3)
     Bf(1,1) = 1;
     Bf(2,2) = 1;
     Bc = [zeros(n,m);
-      inv(Mass)*Bf];
+      pinv(Mass)*Bf];
     
     C = eye(2*n); % all-output 
     D = zeros(size(C,1), m); % direct transition matrix
     dt = 0.05;
     [A,B] = c2d(Ac, Bc, dt); % discrete system dynamic
-    Q = eye(2*n);
+    Q = eye(2*n)*10;
     R = eye(m);
 else
     disp('Not a system number. type "help getSystemModel" for more info')

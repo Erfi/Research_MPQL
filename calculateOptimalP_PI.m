@@ -18,6 +18,7 @@ function [ P, GP ] = calculateOptimalP_PI( a,b,Q,R,r,gamma,SorG_init,usingS,numI
 %   GP: Gains for each iteration. (m*numIter x n)
 %--------------------------------------------------------------------------
     [n,m] = size(b);
+    
     if usingS
         Sxu = SorG_init(1:n, n+1:n+r*m);
         Suu = SorG_init(n+1:n+r*m,n+1:n+r*m);
@@ -29,9 +30,10 @@ function [ P, GP ] = calculateOptimalP_PI( a,b,Q,R,r,gamma,SorG_init,usingS,numI
     
     GP = G_init;
     for i = 1:numIter
+        new_initial_gain = GP(end-(m-1):end,:);
     %----Policy Evaluation----
-        P = calculateNumericalP_RLS(a,b,Q,R,r,gamma,GP(end-(m-1):end,:),false);
-%         P = calculateNumericalP(a,b,Q,R,r,gamma,GP(end-(m-1):end,:),false);
+%         P = calculateNumericalP_RLS(a,b,Q,R,r,gamma,new_initial_gain,false);
+        P = calculateNumericalP(a,b,Q,R,r,gamma,new_initial_gain,false);
     %----Policy Improvement----
         P_xu = P(1:n, n+1:end);
         P_uu = P(n+1:end, n+1:end);

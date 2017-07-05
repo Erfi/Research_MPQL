@@ -5,13 +5,13 @@
 %-------------------------------------------------------------------------
 clear all;
 
-[a,b,c,d,Q,R] = getSystemModel(2);
+[a,b,c,d,Q,R] = getSystemModel(3);
 r = 2;
 gamma = 1;
 [n,m] = size(b);
 
 %--------------------------------------
-S = calculateNumericalS_RLS(a,b,r,gamma,Q,R);
+S = calculateNumericalS(a,b,r,gamma,Q,R);
 P_ana = calculateAnalyticalP(a,b,r,S);
 P_batch = calculateNumericalP(a,b,Q,R,r,gamma,S, true);
 P_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S, true);

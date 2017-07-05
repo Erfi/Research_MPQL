@@ -18,10 +18,6 @@ function [ S ] = calculateNumericalS_RLS( a,b,r,gamma, Q,R )
     [n,m] = size(b);
     S_stacked = zeros((n+r*m)^2,1);
     V_k = eye((n+r*m)^2)*1e8; % initialize autocorrolation matrix (Large numbers suggest low confidance for the initial estimation)
-    diffAvg = 1; % average difference in S_stacked for each iteration
-    epsilon = 1e-3; % ending criteria
-    counter = 0;
-%     while(diffAvg > epsilon)
     for t=1:((n+r*m)^2)*5
         x = zeros(n, r+2);
         x(:,1) = 2*randn(n,1);

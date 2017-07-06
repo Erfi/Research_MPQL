@@ -16,7 +16,7 @@ function [ A,B,C,D,Q,R,Ac,Bc ] = getSystemModel( sysNumber )
 %   Bc: System Input Matrix (Continuous)
 %---------------------------------
 %----- System #1 ----
-% A 2 DOF system
+% A 1 DOF system, 1 input
 %--------------------
 %
 %----- System #2 ----
@@ -71,8 +71,8 @@ elseif (sysNumber == 2)
       pinv(massMatrix)*Bf];
     C=eye(n,2*n);
     D = zeros(size(C,1),m); % direct transition matrix
-    Q = 100000*eye(2*n); 
-    R = eye(m);
+    Q = eye(2*n); 
+    R = 1e-5*eye(m);
     dt = 0.05; % sampling delta using ~6 * highest frequency of the system
     [A,B] = c2d(Ac, Bc, dt); % discrete system dynamic
 

@@ -15,7 +15,8 @@
 %         and the extra part "(gamma^r)*U_kpr" only vanishes for the case
 %         with large r and gamma<1. making gamma<1 a necessity if we are to
 %         ignore the extra term (as they do in all RL literature). 
-%
+%         Yet, adding the extra term still does not make the results of
+%         numerical P consistent for complex problems :(
 %
 %
 %

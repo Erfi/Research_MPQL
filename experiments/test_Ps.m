@@ -9,7 +9,7 @@ close all;
 
 [n,m] = size(b);
 dt = 0.05;
-r = 5;
+r = 3;
 gamma = 1;
 
 %--- Checking for controlibility ---
@@ -33,7 +33,7 @@ ylabel('Value of singular values')
 
 
 S = calculateNumericalS(a,b,r,gamma,Q,R);
-
+%%
 %-------
 P_ana_s = calculateAnalyticalPs(a,b,r,S);
 GP_ana_s = extractGainFromP(P_ana_s,n)
@@ -43,17 +43,20 @@ GP_ana = extractGainFromP(P_ana,n)
 %-------
 P_num_batch = calculateNumericalP(a,b,Q,R,r,gamma,S,true);
 GP_num_batch = extractGainFromP(P_num_batch,n)
+% abs(eig(a+b*GP_num_batch))
 %-------
 P_num_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S,true);
 GP_num_RLS = extractGainFromP(P_num_RLS,n)
 %-------
-P_PI = calculateOptimalP_PI(a,b,Q,R,r,gamma,S,true,5);
+[P_PI,GPs_PI] = calculateOptimalP_PI(a,b,Q,R,r,gamma,S,true,5);
 GP_PI = extractGainFromP(P_PI,n)
+% abs(eig(a+b*GP_PI))
 %-------
 [~,GL,~] = extractGainFromS(S,n,m);
 GL
 %-------
 GLQR = -dlqr(a,b,Q,R)
+% abs(eig(a+b*GLQR))
 
 
 

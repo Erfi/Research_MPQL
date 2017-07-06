@@ -28,9 +28,8 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
         GL = SorGL;
     end
     
-    numIter = 2*((n+m)^2); % 2 * number of equations nessessary (so we will have enough rank)
+    numIter = ((n+m)^2); % 2 * number of equations nessessary (so we will have enough rank)
     exploration_coeff = max(max(abs(GL))); % 100% of the max of GL
-    
     
     for i=1:numIter
         x_k = randn(n,1); % initialize x(k)
@@ -47,14 +46,14 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
 %         LHS(i,:) = LHS_reduced; 
         RHS(i,:) = U_k;
         %update state
-%         x_k = x_kp1; %works better with independent data points 
+%         x_k = x_kp1;
     end
     %---- checking LHS matrix's condition ----
 %     condition_Number = cond(LHS)
 %     rank_Number = rank(LHS)
     %-----------------------------------------
     P_stacked = pinv(LHS)*RHS;
-    m = sqrt(size(P_stacked,1));
-    P = reshape(P_stacked, [m,m]);
-%     P = expand_symmetric_vector(P_stacked,n+m);
+%     m = sqrt(size(P_stacked,1));
+%     P = reshape(P_stacked, [m,m]);
+    P = expand_symmetric_vector(P_stacked,n+m);
 end

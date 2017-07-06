@@ -4,12 +4,12 @@ clear all;
 close all;
 
 %--- System Model ---
-[a,b,C,D,Q,R,ac,bc] = getSystemModel(2);
+[a,b,C,D,Q,R,ac,bc] = getSystemModel(3);
 %--------------------
 
 [n,m] = size(b);
 dt = 0.05;
-r = 10;
+r = 5;
 gamma = 1;
 
 %--- Checking for controlibility ---
@@ -26,39 +26,32 @@ format short
 [maxVal, Imax] = max(diag(S));
 singleVals = diag(S)/maxVal;
 semilogy(singleVals,'*')
+title('Normalized singular values of the Controlability matrix')
+xlabel('Number of singular values')
+ylabel('Value of singular values')
 %-----------------------------------
 
 
-S = calculateAnalyticalS(a,b,r,gamma,Q,R);
+S = calculateNumericalS(a,b,r,gamma,Q,R);
 
 %-------
 P_ana_s = calculateAnalyticalPs(a,b,r,S);
-Pxu = P_ana_s(1:n, n+1:end);
-Puu = P_ana_s(n+1:end, n+1:end);
-GP_ana_s = -pinv(Puu)*Pxu'
+GP_ana_s = extractGainFromP(P_ana_s,n)
 %-------
 P_ana = calculateAnalyticalP(a,b,r,S);
-Pxu = P_ana(1:n, n+1:end);
-Puu = P_ana(n+1:end, n+1:end);
-GP_ana = -pinv(Puu)*Pxu'
+GP_ana = extractGainFromP(P_ana,n)
 %-------
 P_num_batch = calculateNumericalP(a,b,Q,R,r,gamma,S,true);
-Pxu = P_num_batch(1:n, n+1:end);
-Puu = P_num_batch(n+1:end, n+1:end);
-GP_num_batch = -pinv(Puu)*Pxu'
+GP_num_batch = extractGainFromP(P_num_batch,n)
 %-------
 P_num_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S,true);
-Pxu = P_num_RLS(1:n, n+1:end);
-Puu = P_num_RLS(n+1:end, n+1:end);
-GP_num_RLS = -pinv(Puu)*Pxu'
+GP_num_RLS = extractGainFromP(P_num_RLS,n)
 %-------
 P_PI = calculateOptimalP_PI(a,b,Q,R,r,gamma,S,true,5);
-Pxu = P_num_RLS(1:n, n+1:end);
-Puu = P_num_RLS(n+1:end, n+1:end);
-GP_PI = -pinv(Puu)*Pxu'
+GP_PI = extractGainFromP(P_PI,n)
 %-------
-G = extractGainFromS(S,n,m);
-GL = G(1:m,:)
+[~,GL,~] = extractGainFromS(S,n,m);
+GL
 %-------
 GLQR = -dlqr(a,b,Q,R)
 

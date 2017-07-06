@@ -4,6 +4,9 @@ function [ GP ] = extractGainFromP(P,n)
 %
 % Args:
 %   n: number of elements in state X -> (nx1)
+%
+% Returns:
+%   GP: Gain from the P matrix
 %---------------------------------------------
     Pxu = P(1:n,n+1:end);
     Puu = P(n+1:end,n+1:end);

@@ -14,11 +14,8 @@ gamma = 1;
 
 %------Global Variables-----------
 [n,m] = size(b);
-S = calculateAnalyticalS(a,b,r,gamma,Q,R);
-Sxu = S(1:n, n+1:n+r*m);
-Suu = S(n+1:n+r*m,n+1:n+r*m);
-G = -pinv(Suu)*Sxu';
-GL = G(1:m,:);
+S = calculateNumericalS(a,b,r,gamma,Q,R);
+[~,GL,~] = extractGainFromS(S,n,m);
 numIter = 2*((n+m)^2); %2 * number of equations nessessary (so we will have enough rank)
 %---------------------------------
 %-------Dependent Datapoints------
@@ -68,6 +65,14 @@ eig_mag_dependent = abs(eig(a+b*GP_dependent))
 
 GL
 eig_mag_GL = abs(eig(a+b*GL))
+
+P_PI = calculateOptimalP_PI(a,b,Q,R,r,gamma,GL,false,5)
+GP_PI = extractGainFromP(P_PI,n)
+eig_mag_GP_PI = abs(eig(a+b*GP_PI))
+
+P_RLS = calculateNumericalP_RLS(a,b,Q,R,r,gamma,GL,false)
+GP_RLS = extractGainFromP(P_RLS,n)
+eig_mag_GP_RLS = abs(eig(a+b*GP_RLS))
 
 GLQR = -dlqr(a,b,Q,R)
 eig_mag_LQR = abs(eig(a+b*GLQR))

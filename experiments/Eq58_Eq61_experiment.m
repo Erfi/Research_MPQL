@@ -6,7 +6,7 @@
 
 clear all;
 %--- System model ---
-[a,b,C,D,Q,R,ac,bc] = getSystemModel(1);
+[a,b,C,D,Q,R,ac,bc] = getSystemModel(3);
 %--------------------
 
 [n,m] = size(b);

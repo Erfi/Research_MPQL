@@ -31,7 +31,6 @@ function [ P ] = calculateNumericalP(a,b,Q,R,r,gamma,SorGL,usingS)
     numIter = 2*((n+m)^2); % 2 * number of equations nessessary (so we will have enough rank)
     exploration_coeff = max(max(abs(GL))); % 100% of the max of GL
     
-    
     for i=1:numIter
         x_k = randn(n,1); % initialize x(k)
         u_k = GL*x_k + exploration_coeff*randn(m,1);

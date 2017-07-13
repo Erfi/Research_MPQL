@@ -20,10 +20,7 @@ function [ P, GP ] = calculateOptimalP_PI( a,b,Q,R,r,gamma,SorG_init,usingS,numI
     [n,m] = size(b);
     
     if usingS
-        Sxu = SorG_init(1:n, n+1:n+r*m);
-        Suu = SorG_init(n+1:n+r*m,n+1:n+r*m);
-        G = -pinv(Suu)*Sxu';
-        G_init = G(1:m,:); 
+        G_init = extractGainFromS(SorG_init,n,m); 
     else
         G_init = SorG_init;
     end

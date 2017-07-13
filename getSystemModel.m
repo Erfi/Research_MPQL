@@ -26,6 +26,11 @@ function [ A,B,C,D,Q,R,Ac,Bc ] = getSystemModel( sysNumber )
 %----- System #3 ----
 % A 2 DOF system, 2 input
 %--------------------
+%
+%----- System #4 ----
+% A 20 state, 2 input, 2 output
+%--------------------
+%
 %--------------------------------------------------------------------------
 
 if (sysNumber == 1)
@@ -33,8 +38,8 @@ if (sysNumber == 1)
     Bc=[0 1]';
     dt = 0.05;
     [A,B] = c2d(Ac, Bc, dt);
-    C = nan;
-    D = nan;
+    C = eye(2);
+    D = 0;
     Q=eye(2);
     R=1;
     
@@ -71,8 +76,8 @@ elseif (sysNumber == 2)
       pinv(massMatrix)*Bf];
     C=eye(n,2*n);
     D = zeros(size(C,1),m); % direct transition matrix
-    Q = eye(2*n); 
-    R = 1e-5*eye(m);
+    Q = 1000*eye(2*n); 
+    R = eye(m);
     dt = 0.05; % sampling delta using ~6 * highest frequency of the system
     [A,B] = c2d(Ac, Bc, dt); % discrete system dynamic
 
@@ -107,6 +112,19 @@ elseif (sysNumber == 3)
     [A,B] = c2d(Ac, Bc, dt); % discrete system dynamic
     Q = eye(2*n)*10;
     R = eye(m);
+
+elseif (sysNumber == 4)
+    data = load('trussmodelforErfan.mat');
+    A = data.a;
+    B = data.b;
+    C = data.c;
+    D = data.d;
+    [n,m] = size(B);
+    Q = 1000*eye(n);
+    R = eye(m);
+    Ac = nan;
+    Bc = nan;
+    
 else
     disp('Not a system number. type "help getSystemModel" for more info')
 end

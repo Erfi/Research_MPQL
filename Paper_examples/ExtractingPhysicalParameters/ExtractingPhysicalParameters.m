@@ -45,10 +45,11 @@ end
 
 %------------Simulation Run Flags--------------------
 runContinuousLQR = false;
-runDiscreteLQR =   true;
-runMPC_Original =  true;
+runDiscreteLQR =   false;
+runMPC_Original =  false;
 runMPC =           true;
-runImplicitMPQL =  true;
+runImplicitMPQL =  false;
+runImplicitMPQL_Continuous = false;
 %---------------------------------------------------
 
 %------------Simulation Variables-------------------
@@ -92,21 +93,21 @@ title('Open-Loop Simulation LQR (discrete-time)');
 
 %Closed_Loop Simulation Using LQR (discrete)
 Kd = -dlqr(A,B,Q,R)
-[X_hist, U_hist] = simulate(A,B,Kd,X0,length(Time));
+[X_hist_LQR_D, U_hist_LQR_D] = simulate(A,B,Kd,X0,length(Time));
 subplot(3,1,2);
-plot(Time,Cc*X_hist);
+plot(Time,Cc*X_hist_LQR_D);
 title('Closed-Loop Simulation LQR (discrete-time)');
 
 %Closed-Loop control signal
 subplot(3,1,3);
-plot(Time(1,1:end-1), U_hist);
+plot(Time(1,1:end-1), U_hist_LQR_D);
 title('Control Signal (input) LQR (discrete-time)');
 end
 %------------------------------------------------------
 
 %------------------MPC (Original)----------------------
 if (runMPC_Original)
-    r = 50;
+    r = 100;
     G_MPC = getMPCGain(A,B,Q,R,r)
 
     %Open_Loop Simulation Using LQR (discrete)
@@ -117,14 +118,14 @@ if (runMPC_Original)
     title('Open-Loop simulation MPC\_Original');
 
     %Closed_Loop Simulation Using LQR (discrete)
-    [X_hist, U_hist] = simulate(A,B,G_MPC,X0,length(Time));
+    [X_hist_MPC_Orig, U_hist_MPC_Orig] = simulate(A,B,G_MPC,X0,length(Time));
     subplot(3,1,2);
-    plot(Time,Cc*X_hist)
+    plot(Time,Cc*X_hist_MPC_Orig)
     title(['Closed-Loop simulation MPC\_Original with r=',num2str(r)]);
     
     %Closed-Loop control signal
     subplot(3,1,3);
-    plot(Time(1,1:end-1), U_hist)
+    plot(Time(1,1:end-1), U_hist_MPC_Orig)
     title('Control Signal (input) MPC\_Original');
 end
 
@@ -132,11 +133,11 @@ end
 
 %------------------MPC (from S)------------------------
 if(runMPC)
-    r = 50;
+    r = 100;
     gamma = 0.85;
     S = calculateAnalyticalS(A,B,r,gamma,Q,R);
     [~,GL,~] = extractGainFromS(S,n,m)
-
+    
     %Open_Loop Simulation Using LQR (discrete)
     [Y,~]=dlsim(A,B,Cc,Dc,U,X0);
     figure(4);
@@ -145,14 +146,14 @@ if(runMPC)
     title('Open-Loop simulation MPC (discrete-time)');
 
     %Closed_Loop Simulation Using LQR (discrete)
-    [X_hist, U_hist] = simulate(A,B,GL,X0,length(Time));
+    [X_hist_MPC_S, U_hist_MPC_S] = simulate(A,B,GL,X0,length(Time));
     subplot(3,1,2);
-    plot(Time,Cc*X_hist)
+    plot(Time,Cc*X_hist_MPC_S)
     title(['Closed-Loop simulation MPC (discrete-time) with r=',num2str(r),' gamma=', num2str(gamma)]);
     
     %Closed-Loop control signal
     subplot(3,1,3);
-    plot(Time(1,1:end-1), U_hist)
+    plot(Time(1,1:end-1), U_hist_MPC_S)
     title('Control Signal (input) MPC (discrete-time)');
 end
 %--------------------------------------------------------
@@ -160,8 +161,8 @@ end
 %--------------------MPQL(implicit)----------------------
 if(runImplicitMPQL)
     
-    r = 50;
-    gamma = 0.86;
+    r = 100;
+    gamma = 0.9;
   
     input_vals = [-500000:100000:500000,-10000:1000:10000,-1000:100:1000,-100:10:100];
     input_vals = [-40000,40000,-30000,30000,-20000,20000,-10000,10000,-1000,1000,-100,100,0];
@@ -170,9 +171,9 @@ if(runImplicitMPQL)
     input_vals = repmat(input_vals, [m,1]);
         
     numIter = length(Time);
-    [X_hist_MPQL, U_hist_MPQL, GP] = implicitMPQL(A,B,Q,R,r,gamma,X0,input_vals, numIter,1, false);
+    [X_hist_MPQL, U_hist_MPQL, GP,P] = implicitMPQL(A,B,Q,R,r,gamma,X0,input_vals, numIter,1, false);
     GP
-   
+    
     %Open_Loop Simulation
     [Y,X]=dlsim(A,B,Cc,Dc,U,X0);
     figure(5);
@@ -190,20 +191,135 @@ if(runImplicitMPQL)
 end
 %---------------------------------------------------------
 
-%% Looking at the magnitude of the eigenValues of GP:
-format short
-eigMag = abs(eig(A+B*GP))
-% eigMagLQR = abs(eig(A+B*Kd))
-%% Testing to see if the controller with gain GP is stable for continuous actions
-%Closed_Loop Simulation Using LQR (discrete)
+%--------MPQL(implicit) with coninuous input--------------
+if(runImplicitMPQL_Continuous)
     figure(6)
-    [X_hist, U_hist] = simulate(A,B,GP,X0,length(Time));
+    [X_hist_MPQL_C, U_hist_MPQL_C] = simulate(A,B,GP,X0,length(Time));
     subplot(2,1,1);
-    plot(Time,Cc*X_hist)
+    plot(Time,Cc*X_hist_MPQL_C)
     title(['Closed-Loop MPQL with CONTINUOUS ACTION with r=',num2str(r),' gamma=', num2str(gamma)]);
     
     %Closed-Loop control signal
     subplot(2,1,2);
-    plot(Time(1,1:end-1), U_hist)
-    title('Control Signal (input) MPQL with CONTINUOUS ACTION');
-    
+    plot(Time(1,1:end-1), U_hist_MPQL_C)
+    title('Control Signal (input) MPQL with CONTINUOUS ACTION'); 
+end
+%----------------------------------------------------------
+
+%% Looking at the magnitude of the eigenValues of GP:
+format short
+eigMag = abs(eig(A+B*GP))
+% eigMagLQR = abs(eig(A+B*Kd))
+%% -----------Creating plots for paper--------------
+subplot(3,2,[1,2])
+%Open-loop simulation
+[Y,X]=dlsim(A,B,Cc,Dc,U,X0);
+plot(Time,Y);
+title('Open-Loop simulation'); 
+xlabel('Time (s)');
+ylabel('State');
+
+%LQR
+%Closed_Loop
+subplot(3,2,3);
+plot(Time,Cc*X_hist_LQR_D);
+title('LQR');
+ylabel('State');
+%control signal
+subplot(3,2,5);
+plot(Time(1,1:end-1), U_hist_LQR_D);
+ylabel('Input');
+xlabel('Time (s)')
+
+%Q-Learning
+%Closed_Loop
+subplot(3,2,4)
+plot(Time,Cc*X_hist_MPQL_C)
+title(['Q-Learning with gamma=',num2str(gamma)]);
+ylabel('State')
+%control signal
+subplot(3,2,6);
+plot(Time(1,1:end-1), U_hist_MPQL_C)
+ylabel('Input')
+xlabel('Time (s)')
+
+%% Visualizing CTG and Utility
+
+if (0)
+%--- LQR ----
+[~, Utility_LQR] = getCostToGo(X_hist_LQR_D,U_hist_LQR_D,false ,Q , R);
+figure;
+plot(Time(1:size(Utility_LQR,2)), Utility_LQR, 'LineWidth',3)
+hold on
+area(Time(1:size(Utility_LQR,2)), Utility_LQR,'FaceAlpha', 1 , 'EdgeColor', [0.2,0.2,0.6] ,'FaceColor', [0.7,0.15,0.15])
+hold off
+grid on;
+title('U(k) over time for LQR')
+xlabel('Time(s)')
+ylabel('U(k)')
+
+Area_LQR = sum(Utility_LQR);
+disp(['V(k) or Area under the curve for LQR: ',num2str(Area_LQR)]);
+%-------------
+end
+
+if (1)
+%--- MPC Original ----
+[~, Utility_MPC] = getCostToGo(X_hist_MPC_Orig, U_hist_MPC_Orig, false, Q, R);
+r = 50;
+figure;
+plot(Time(1:size(Utility_MPC,2)), Utility_MPC, 'LineWidth',3)
+hold on
+area(Time(1:size(Utility_MPC,2)), Utility_MPC,'FaceAlpha', 1 , 'EdgeColor', [0.2,0.2,0.6] ,'FaceColor', [0.7,0.15,0.15])
+hold off
+axis([0, 2, 0, 2*1e4])
+grid on;
+title(['U(k) over time for MPC with r=',num2str(r)])
+xlabel('Time(s)')
+ylabel('U(k)')
+
+Area_MPC = sum(Utility_MPC);
+disp(['V(k) or Area under the curve for MPC: ',num2str(Area_MPC)]);
+%-------------
+end
+
+
+if (1)
+%--- MPC from S ----
+[~, Utility_MPC_S] = getCostToGo(X_hist_MPC_S, U_hist_MPC_S, false, Q, R);
+figure;
+plot(Time(1:size(Utility_MPC_S,2)), Utility_MPC_S, 'LineWidth',3)
+hold on
+area(Time(1:size(Utility_MPC_S,2)), Utility_MPC_S,'FaceAlpha', 1 , 'EdgeColor', [0.2,0.2,0.6] ,'FaceColor', [0.7,0.15,0.15])
+hold off
+axis([0, 2, 0, 2*1e4])
+
+Area_MPC_S = sum(Utility_MPC_S);
+disp(['V(k) or Area under the curve for MPC_S: ',num2str(Area_MPC_S)]);
+
+grid on;
+title(['U(k) over time for MPC from S with r=',num2str(r)])
+xlabel('Time(s)')
+ylabel('U(k)')
+%-------------
+end
+
+
+if (0)
+%--- MPQL ---
+[~, Utility_MPQL] = getCostToGo(X_hist_MPQL, U_hist_MPQL, false, Q, R);
+figure;
+plot(Time(1:size(Utility_MPQL,2)), Utility_MPQL, 'LineWidth',3)
+hold on
+area(Time(1:size(Utility_MPQL,2)), Utility_MPQL,'FaceAlpha', 1 , 'EdgeColor', [0.2,0.2,0.6] ,'FaceColor', [0.7,0.15,0.15])
+hold off
+axis([0, 2, 0, 2*1e4])
+grid on;
+title(['U(k) over time for MPQL with r=',num2str(r)])
+xlabel('Time(s)')
+ylabel('U(k)')
+
+Area_MPQL = sum(Utility_MPQL);
+disp(['V(k) or Area under the curve for MPQL: ',num2str(Area_MPQL)]);
+%-------------
+end

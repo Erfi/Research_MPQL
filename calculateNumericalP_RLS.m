@@ -31,8 +31,8 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
     exploration_coeff = max(max(abs(GL)));
     P_stacked = zeros((n+m)^2,1); % initialize P (in stacked form) 
     V_k = eye((n+m)^2)*1e8; % initialize autocorrolation matrix (Large numbers suggest low confidance for the initial estimation)
-    x_k = randn(n,1); % initialize x(k)
-    for t=1:((n+m)^2)*5
+    for t=1:((n+m)^2)*3
+        x_k = randn(n,1); % initialize x(k)
         u_k = exploration_coeff*randn(m,1) + GL*x_k; % u(k) with random/exploritory component 
         xu_k = vertcat(x_k, u_k);
         x_kp1 = a*x_k + b*u_k; % this is a simulation by the environment (plant)
@@ -44,7 +44,7 @@ function [ P ] = calculateNumericalP_RLS(a,b,Q,R,r,gamma,SorGL,usingS)
         %RLS step
         [V_k, P_stacked] = rls_one_step(V_k,P_stacked, LHS, RHS);
         %update state
-        x_k = x_kp1;
+%         x_k = x_kp1;
     end
     l = sqrt(size(P_stacked,1));
     P = reshape(P_stacked, [l,l]);

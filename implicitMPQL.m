@@ -1,6 +1,6 @@
 
 
-function [x,u_history,GP] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter,inputSelectionMode,plotFlag)
+function [x,u_history,GP,P] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter,inputSelectionMode,plotFlag)
 % This function brings the system to zero using
 % the implicit version of MPQL.
 %
@@ -39,14 +39,15 @@ function [x,u_history,GP] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIte
 %     P = calculateAnalyticalP(a,b,r,S);
 %     P = calculateNumericalP_RLS(a,b,Q,R,r,gamma,S,true);
 %     P = calculateNumericalP(a,b,Q,R,r,gamma,S,true);
-    P = calculateOptimalP_PI(a,b,Q,R,r,gamma,S,true,5);
+%     P = calculateOptimalP_PI(a,b,Q,R,r,gamma,S,true,5);
     %----------------------------------------
     
     
     %--- experiment to see if we can just get rid of the S matrix ---
-%     randomG = randn(m,n)*1e-6;
-%     mag_eig_initial_gain = abs(eig(a+b*randomG))
-%     P = calculateOptimalP_PI(a,b,Q,R,r,gamma,randomG,false,5);
+%     randomG = randn(m,n)*0.1;
+    [~,randomG,~] = extractGainFromS(S,n,m);
+    mag_eig_initial_gain = abs(eig(a+b*randomG))
+    P = calculateOptimalP_PI(a,b,Q,R,r,gamma,randomG,false,5);
     %----------------------------------------------------------------
 
     

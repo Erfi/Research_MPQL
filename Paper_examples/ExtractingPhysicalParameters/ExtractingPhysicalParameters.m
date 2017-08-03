@@ -47,13 +47,14 @@ end
 runContinuousLQR = false;
 runDiscreteLQR =   false;
 runMPC_Original =  false;
-runMPC =           true;
-runImplicitMPQL =  false;
+runMPC =           false;
+runImplicitMPQL =  true;
 runImplicitMPQL_Continuous = false;
 %---------------------------------------------------
 
 %------------Simulation Variables-------------------
-Time = 0:dt:2;
+% Time = 0:dt:2;
+Time = 0:500;
 U = zeros(size(Time,2),m); %single input
 X0 = ones(1,n);
 %----------------------------------------------------
@@ -89,8 +90,7 @@ if(runDiscreteLQR)
 figure(2);
 subplot(3,1,1);
 plot(Time,Y);
-title('Open-Loop Simulation LQR (discrete-time)');
-
+title('Open-Loop Simulation');
 %Closed_Loop Simulation Using LQR (discrete)
 Kd = -dlqr(A,B,Q,R)
 [X_hist_LQR_D, U_hist_LQR_D] = simulate(A,B,Kd,X0,length(Time));
@@ -107,7 +107,7 @@ end
 
 %------------------MPC (Original)----------------------
 if (runMPC_Original)
-    r = 100;
+    r = 40;
     G_MPC = getMPCGain(A,B,Q,R,r)
 
     %Open_Loop Simulation Using LQR (discrete)
@@ -133,7 +133,7 @@ end
 
 %------------------MPC (from S)------------------------
 if(runMPC)
-    r = 100;
+    r = 40;
     gamma = 0.85;
     S = calculateAnalyticalS(A,B,r,gamma,Q,R);
     [~,GL,~] = extractGainFromS(S,n,m)
@@ -161,26 +161,29 @@ end
 %--------------------MPQL(implicit)----------------------
 if(runImplicitMPQL)
     
-    r = 100;
-    gamma = 0.9;
+    r = 40;
+    gamma = 0.85;
+    
   
     input_vals = [-500000:100000:500000,-10000:1000:10000,-1000:100:1000,-100:10:100];
     input_vals = [-40000,40000,-30000,30000,-20000,20000,-10000,10000,-1000,1000,-100,100,0];
     input_vals = [-5000, 5000, -500,500, -50, 50, 0];
-    input_vals = [-5,5,-4,4,-2,2,-1:0.2:1];
+    input_vals = [-5,5,-3,3,-1,1,-0.5,0.5,0];
     input_vals = repmat(input_vals, [m,1]);
         
     numIter = length(Time);
     [X_hist_MPQL, U_hist_MPQL, GP,P] = implicitMPQL(A,B,Q,R,r,gamma,X0,input_vals, numIter,1, false);
     GP
     
-    %Open_Loop Simulation
+%     Open_Loop Simulation
     [Y,X]=dlsim(A,B,Cc,Dc,U,X0);
     figure(5);
     subplot(3,1,1);
     plot(Time,Y);
     title('Open-Loop simulation MPQL (discrete-time)'); 
-    %Closed_Loop Simulation
+    
+    
+%     Closed_Loop Simulation
     subplot(3,1,2);
     plot(Time,Cc*X_hist_MPQL(:,1:end-1))
     title(['Closed-Loop simulation MPQL (discrete-time) with r=', num2str(r),' gamma=', num2str(gamma)]);
@@ -188,6 +191,20 @@ if(runImplicitMPQL)
     subplot(3,1,3);
     plot(Time, U_hist_MPQL);
     title('Control Input');
+
+
+%     subplot(2,1,1);
+%     plot(Time,Cc*X_hist_MPQL(:,1:end-1))
+%     set(gca,'FontSize',25) %set axis properties
+%     xlabel('Time Step','FontSize', 30)
+%     ylabel('State', 'FontSize', 30);
+%     %Control signal
+%     subplot(2,1,2);
+%     plot(Time, U_hist_MPQL);
+%     set(gca,'FontSize',25) %set axis properties
+%     xlabel('Time Step','FontSize', 30)
+%     ylabel('Control Input', 'FontSize', 30);
+
 end
 %---------------------------------------------------------
 
@@ -199,10 +216,18 @@ if(runImplicitMPQL_Continuous)
     plot(Time,Cc*X_hist_MPQL_C)
     title(['Closed-Loop MPQL with CONTINUOUS ACTION with r=',num2str(r),' gamma=', num2str(gamma)]);
     
+%     set(gca,'FontSize',25) %set axis properties
+%     xlabel('Time Step','FontSize', 30)
+%     ylabel('State', 'FontSize', 30); 
+    
     %Closed-Loop control signal
     subplot(2,1,2);
     plot(Time(1,1:end-1), U_hist_MPQL_C)
     title('Control Signal (input) MPQL with CONTINUOUS ACTION'); 
+    
+%     set(gca,'FontSize',25) %set axis properties
+%     xlabel('Time Step','FontSize', 30)
+%     ylabel('Control Input', 'FontSize', 30);
 end
 %----------------------------------------------------------
 
@@ -263,7 +288,7 @@ disp(['V(k) or Area under the curve for LQR: ',num2str(Area_LQR)]);
 %-------------
 end
 
-if (1)
+if (0)
 %--- MPC Original ----
 [~, Utility_MPC] = getCostToGo(X_hist_MPC_Orig, U_hist_MPC_Orig, false, Q, R);
 r = 50;
@@ -292,15 +317,17 @@ plot(Time(1:size(Utility_MPC_S,2)), Utility_MPC_S, 'LineWidth',3)
 hold on
 area(Time(1:size(Utility_MPC_S,2)), Utility_MPC_S,'FaceAlpha', 1 , 'EdgeColor', [0.2,0.2,0.6] ,'FaceColor', [0.7,0.15,0.15])
 hold off
-axis([0, 2, 0, 2*1e4])
+axis([0, 500, 0, 2*1e4])
 
 Area_MPC_S = sum(Utility_MPC_S);
 disp(['V(k) or Area under the curve for MPC_S: ',num2str(Area_MPC_S)]);
 
 grid on;
-title(['U(k) over time for MPC from S with r=',num2str(r)])
-xlabel('Time(s)')
-ylabel('U(k)')
+% title('Utility for MPC with r=40 and gamma=1.0')
+set(gca,'FontSize',25) %set axis properties
+xlabel('Time Step','FontSize', 30)
+ylabel('U(k)','FontSize', 30)
+
 %-------------
 end
 
@@ -313,11 +340,12 @@ plot(Time(1:size(Utility_MPQL,2)), Utility_MPQL, 'LineWidth',3)
 hold on
 area(Time(1:size(Utility_MPQL,2)), Utility_MPQL,'FaceAlpha', 1 , 'EdgeColor', [0.2,0.2,0.6] ,'FaceColor', [0.7,0.15,0.15])
 hold off
-axis([0, 2, 0, 2*1e4])
+axis([0, 500, 0, 2*1e4])
 grid on;
-title(['U(k) over time for MPQL with r=',num2str(r)])
-xlabel('Time(s)')
-ylabel('U(k)')
+title(['U(k) over time for MPQL',' iteration 5'])
+set(gca,'FontSize',25) %set axis properties
+xlabel('Time Step','FontSize', 30)
+ylabel('U(k)','FontSize', 30)
 
 Area_MPQL = sum(Utility_MPQL);
 disp(['V(k) or Area under the curve for MPQL: ',num2str(Area_MPQL)]);

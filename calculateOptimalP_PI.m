@@ -32,10 +32,8 @@ function [ P, GP ] = calculateOptimalP_PI( a,b,Q,R,r,gamma,SorG_init,usingS,numI
 %         P = calculateNumericalP_RLS(a,b,Q,R,r,gamma,new_initial_gain,false);
         P = calculateNumericalP(a,b,Q,R,r,gamma,new_initial_gain,false);
     %----Policy Improvement----
-        P_xu = P(1:n, n+1:end);
-        P_uu = P(n+1:end, n+1:end);
-        newGain = -pinv(P_uu)*P_xu';
-        GP = vertcat(GP,newGain);
+        newGain = extractGainFromP(P,n);
+        GP = vertcat(GP, newGain);
     end
 end
 

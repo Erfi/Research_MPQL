@@ -1,5 +1,3 @@
-
-
 function [x,u_history,GP,P] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numIter,inputSelectionMode,plotFlag)
 % This function brings the system to zero using
 % the implicit version of MPQL.
@@ -44,15 +42,15 @@ function [x,u_history,GP,P] = implicitMPQL(a,b,Q,R,r,gamma,x_init,inputVals,numI
     
     
     %--- experiment to see if we can just get rid of the S matrix ---
-%     randomG = randn(m,n)*0.1;
+%     randomG = randn(m,n)*1e-3;
     [~,randomG,~] = extractGainFromS(S,n,m);
-    mag_eig_initial_gain = abs(eig(a+b*randomG))
-    P = calculateOptimalP_PI(a,b,Q,R,r,gamma,randomG,false,5);
+%     mag_eig_initial_gain = abs(eig(a+b*randomG))
+    P = calculateOptimalP_PI(a,b,Q,R,r,1.0,randomG,false,6);
     %----------------------------------------------------------------
 
     
     %----Calculating GP (for the output of this function)----
-    GP = extractGainFromP(P,n);
+    GP = extractGainFromP(P,n)
     %---------------------------------------------------------
     
     if (inputSelectionMode == 1)

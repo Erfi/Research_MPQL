@@ -10,8 +10,7 @@ function [ AnalyticalS ] = calculateAnalyticalS( a,b,r,gamma,Q,R )
 %   Q: state weigh matrix 
 %   R: input weight matrix
     
-    [n,~] = size(a);
-    [numStates, numInputs] = size(b);
+    [n, m] = size(b);
 
     capQ = zeros(n*r,n*r);
     capGammaQ = zeros(n*r,n*r);
@@ -21,11 +20,11 @@ function [ AnalyticalS ] = calculateAnalyticalS( a,b,r,gamma,Q,R )
     end
     Qgamma = capGammaQ*capQ*capGammaQ;
 
-    capR = zeros(numInputs*r, numInputs*r);
-    capGammaR = zeros(numInputs*r, numInputs*r);  
+    capR = zeros(m*r, m*r);
+    capGammaR = zeros(m*r, m*r);  
     for i=1:r
-        capR(numInputs*(i-1)+1:numInputs*i, numInputs*(i-1)+1:numInputs*i) = R;
-        capGammaR(numInputs*(i-1)+1:numInputs*i, numInputs*(i-1)+1:numInputs*i) = eye(numInputs, numInputs) * (sqrt(gamma))^(i-1);
+        capR(m*(i-1)+1:m*i, m*(i-1)+1:m*i) = R;
+        capGammaR(m*(i-1)+1:m*i, m*(i-1)+1:m*i) = eye(m, m) * (sqrt(gamma))^(i-1);
     end
     Rgamma = capGammaR*capR*capGammaR;
 
@@ -35,13 +34,13 @@ function [ AnalyticalS ] = calculateAnalyticalS( a,b,r,gamma,Q,R )
         P1(n*(i-1)+1:n*i,:) = a^i;
     end
 
-    P2 = zeros(numStates*r, numInputs*r);
+    P2 = zeros(n*r, m*r);
     for i=1:r %(for row=i)
-        row = zeros(numStates, numInputs*r);
+        row = zeros(n, m*r);
         for j=1:i %(for col=j)
-            row(:,numInputs*(j-1)+1:numInputs*j) = a^(i-j)*b;
+            row(:,m*(j-1)+1:m*j) = a^(i-j)*b;
         end
-       P2(numStates*(i-1)+1:numStates*i,:) = row;
+       P2(n*(i-1)+1:n*i,:) = row;
     end
     
     AnalyticalS = [P1'*Qgamma*P1, P1'*Qgamma*P2;

@@ -45,10 +45,10 @@ end
 
 %------------Simulation Run Flags--------------------
 runContinuousLQR = false;
-runDiscreteLQR =   false;
-runMPC_Original =  false;
+runDiscreteLQR =   true;
+runMPC_Original =  true;
 runMPC =           false;
-runImplicitMPQL =  true;
+runImplicitMPQL =  false;
 runImplicitMPQL_Continuous = false;
 %---------------------------------------------------
 
@@ -107,8 +107,9 @@ end
 
 %------------------MPC (Original)----------------------
 if (runMPC_Original)
-    r = 40;
-    G_MPC = getMPCGain(A,B,Q,R,r)
+    r = 100;
+    gamma = 1.0;
+    G_MPC = getMPCGain(A,B,Q,R,r,gamma)
 
     %Open_Loop Simulation Using LQR (discrete)
     [Y,~]=dlsim(A,B,Cc,Dc,U,X0);
@@ -133,7 +134,7 @@ end
 
 %------------------MPC (from S)------------------------
 if(runMPC)
-    r = 40;
+    r = 200;
     gamma = 0.85;
     S = calculateAnalyticalS(A,B,r,gamma,Q,R);
     [~,GL,~] = extractGainFromS(S,n,m)
@@ -175,18 +176,18 @@ if(runImplicitMPQL)
     [X_hist_MPQL, U_hist_MPQL, GP,P] = implicitMPQL(A,B,Q,R,r,gamma,X0,input_vals, numIter,1, false);
     GP
     
-%     Open_Loop Simulation
+    %Open_Loop Simulation
     [Y,X]=dlsim(A,B,Cc,Dc,U,X0);
     figure(5);
     subplot(3,1,1);
     plot(Time,Y);
     title('Open-Loop simulation MPQL (discrete-time)'); 
-    
-    
-%     Closed_Loop Simulation
+ 
+    %Closed_Loop Simulation
     subplot(3,1,2);
     plot(Time,Cc*X_hist_MPQL(:,1:end-1))
     title(['Closed-Loop simulation MPQL (discrete-time) with r=', num2str(r),' gamma=', num2str(gamma)]);
+    
     %Control signal
     subplot(3,1,3);
     plot(Time, U_hist_MPQL);

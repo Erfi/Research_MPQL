@@ -13,8 +13,8 @@ load('trussmodelforErfan.mat','dt');
 %--------------
 
 %--- Simulation Variables ---
-gamma = 0.7;
-r_vals = 10:5:50;
+gamma = 0.9;
+r_vals = 10:10:100;
 % only the forst five gains
 MPC_gains = zeros(5,length(r_vals));
 %---------------------------
@@ -26,21 +26,21 @@ for r=r_vals
     MPC_gains(:,index) = G_MPC(1,1:5);
     index = index+1;
 end
-MPC_stability = checkStability(G_MPC,A,B)
+MPC_stability = checkStability(G_MPC)
 %---------------------------
 
 %------- LQR gains ---------
 N = 300;
 G_LQR = discounted_dlqr(A,B,Q,R,N,gamma);
 LQR_gains = G_LQR(1,1:5);
-LQR_stability = checkStability(G_LQR,A,B)
+LQR_stability = checkStability(G
 %---------------------------
 
 %% plots
 
-LQR_plot = plot(r_vals, repmat(LQR_gains', 1,length(r_vals)), 'LineWidth',2.5, 'Color',[0.8,0.4,0.4]);
+LQR_plot = plot(r_vals, repmat(LQR_gains', 1,length(r_vals)), 'LineWidth',2.5, 'Color',[0.8,0.5,0.5]);
 hold on;
-MPC_plot = plot(r_vals, MPC_gains','LineWidth',2.5, 'Color',[0.3,0.3,0.5], 'LineStyle','-.');
+MPC_plot = plot(r_vals, MPC_gains','LineWidth',2.5, 'Color',[0.3,0.3,0.5]);
 hold off;
 set(gca,'FontSize',25) %set axis properties
 xlabel('Prediction Horizon','FontSize', 30)

@@ -11,7 +11,7 @@ load('trussmodelforErfan.mat','dt');
 [n,m] = size(B);
 % --------------
 
-r_range = [1,5:10:200];
+r_range = [1,20:20:80];
 gamma_range = [0.0:0.1:1.0];
 stabilityMap = ones(length(r_range), length(gamma_range)) * -1;
 
@@ -45,3 +45,18 @@ mymap = [1 0.2 0.2
  set(gca,'xaxisLocation','top')
  grid on
  colorbar;          % show color scale
+ 
+ %% plotting differently
+ mymap = [1 0.2 0.2
+    0.2 1 0.2];
+h = heatmap(gamma_range, r_range,stabilityMap);
+h.Colormap = mymap;
+ 
+ 
+ title('Stability Map for initial gain as r and gamma values change')
+ xlabel('gamma')
+ ylabel('r')
+%  set(gca,'xaxisLocation','top')
+ grid on
+ colorbar;          % show color scale
+%  
